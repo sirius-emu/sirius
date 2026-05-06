@@ -52,6 +52,7 @@ use tokio_util::codec::{Decoder, Encoder};
 #[derive(Debug, Default)]
 pub struct NitroCodec {
     decoder: NitroDecoder,
+    encoder: NitroEncoder,
 }
 
 impl NitroCodec {
@@ -66,5 +67,13 @@ impl Decoder for NitroCodec {
 
     fn decode(&mut self, src: &mut bytes::BytesMut) -> Result<Option<Self::Item>, Self::Error> {
         self.decoder.decode(src)
+    }
+}
+
+impl Encoder<RawPacket> for NitroCodec {
+    type Error = sirius_error::SiriusError;
+
+    fn encode(&mut self, item: RawPacket, dst: &mut bytes::BytesMut) -> Result<(), Self::Error> {
+        self.encoder.encode(item, dst)
     }
 }
