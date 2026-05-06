@@ -32,9 +32,8 @@ impl Encoder<RawPacket> for NitroEncoder {
 
         let length = PacketHeader::MIN_LENGTH
             .checked_add(
-                u32::try_from(body_len).unwrap_or_else(|_| {
-                    panic!("encoder body length {body_len} overflows u32")
-                }),
+                u32::try_from(body_len)
+                    .unwrap_or_else(|_| panic!("encoder body length {body_len} overflows u32")),
             )
             .ok_or_else(|| {
                 SiriusError::Protocol(ProtocolError::EncodingFailed {

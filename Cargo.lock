@@ -240,6 +240,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "sirius-packets"
+version = "0.1.0"
+dependencies = [
+ "bytes",
+ "sirius-codec",
+ "sirius-error",
+ "sirius-types",
+ "tracing",
+]
+
+[[package]]
 name = "sirius-tracing"
 version = "0.1.0"
 dependencies = [
