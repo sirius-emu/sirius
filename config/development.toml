@@ -1,0 +1,6 @@
+# Development overrides.
+#
+# Merged on top of default.toml when the server runs with environment = "development".
+
+[server]
+environment = "development"

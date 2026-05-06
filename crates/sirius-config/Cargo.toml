@@ -1,0 +1,9 @@
+[package]
+name = "sirius-config"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+config = { version = "0.15.22", default-features = false, features = ["toml"] }
+serde.workspace = true
+thiserror.workspace = true

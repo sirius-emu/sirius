@@ -1,0 +1,9 @@
+# Production overrides.
+#
+# Merged on top of default.toml when the server runs with environment = "production".
+# Secrets (database URL, Redis auth) must be supplied via environment variables.
+
+[server]
+environment = "production"
+max_connection = 5000
+shutdown_timeout_secs = 60

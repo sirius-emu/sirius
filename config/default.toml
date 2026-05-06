@@ -1,0 +1,23 @@
+# Sirius - default configuration
+#
+# This file is always loaded. Environment-specific files (development.toml, production.toml) are
+# merged on top. Environment variables with the prefix SIRIUS_ override everything.
+#
+# Do not put secrets here. Use environment variables for database passwords, Redis auth tokens
+# and similar.
+
+[server]
+environment = "development"
+port = 3000
+bind_address = "0.0.0.0"
+max_connections = 2000
+shutdown_timeout_secs = 30
+
+[network]
+read_timeout_secs = 120
+write_timeout_secs = 30
+rate_limit_per_ip = 10
+read_buffer_size = 8192
+websocket_enabled = true
+websocket_path = "/"
+websocket_ping_interval_secs = 30
