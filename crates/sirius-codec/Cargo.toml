@@ -8,4 +8,4 @@ bytes.workspace = true
 sirius-error = { path = "../sirius-error" }
 tracing.workspace = true
 tokio.workspace = true
-tokio-util = { version = "0.7.18", features = ["codec"] }
+tokio-util.workspace = true
