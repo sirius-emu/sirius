@@ -76,9 +76,12 @@ pub trait Actor: Sized + Send + 'static {
         let (mailbox, handle) = Mailbox::new(mailbox_size);
         let ctx = ActorContext::new(handle.clone());
 
-        tokio::spawn(async move {
+        let task = tokio::spawn(async move {
             if let Err(e) = self.on_start(&ctx).await {
                 error!(error = %e, "actor failed during on_start, shutting down");
+                let mut rx = mailbox.into_receiver();
+                rx.close();
+                while rx.recv().await.is_some() {}
                 return;
             }
 
@@ -103,6 +106,16 @@ pub trait Actor: Sized + Send + 'static {
             }
 
             debug!("actor stopped");
+        });
+
+        // Surface panics as errors instead of silently swallowing them.
+        // A panicking actor task would otherwise disappear with no log output.
+        tokio::spawn(async move {
+            if let Err(e) = task.await
+                && e.is_panic()
+            {
+                error!("actor task panicked");
+            }
         });
 
         handle

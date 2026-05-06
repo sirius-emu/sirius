@@ -1,4 +1,4 @@
-use sirius_error::{NetworkError, SiriusError};
+use sirius_error::{ActorError, SiriusError};
 use tokio::sync::mpsc;
 
 /// A cloneable reference to a running actor's mailbox.
@@ -32,12 +32,15 @@ impl<C> Handle<C> {
 
     /// Sends a command to the actor, waiting if the mailbox is full.
     ///
-    /// Returns [`NetworkError::SessionClosed`] if the actor has stopped.
+    /// # Errors
+    ///
+    /// Returns [`ActorError::Stopped`] if the actor has stopped and its
+    /// mailbox is closed.
     pub async fn send(&self, cmd: C) -> Result<(), SiriusError> {
         self.tx
             .send(cmd)
             .await
-            .map_err(|_| SiriusError::Network(NetworkError::SessionClosed))
+            .map_err(|_| SiriusError::Actor(ActorError::Stopped))
     }
 
     /// Sends a command without waiting.
@@ -45,11 +48,16 @@ impl<C> Handle<C> {
     /// Returns an error if the mailbox is full or the actor has stopped.
     /// Unlike [`send`], this never yields.
     ///
+    /// # Errors
+    ///
+    /// Returns [`ActorError::Stopped`] if the actor has stopped, or
+    /// [`ActorError::Stopped`] if the mailbox is currently full.
+    ///
     /// [`send`]: Handle::send
     pub fn try_send(&self, cmd: C) -> Result<(), SiriusError> {
         self.tx
             .try_send(cmd)
-            .map_err(|_| SiriusError::Network(NetworkError::SessionClosed))
+            .map_err(|_| SiriusError::Actor(ActorError::Stopped))
     }
 
     /// Returns `true` if the actor is still running.
@@ -57,6 +65,7 @@ impl<C> Handle<C> {
     /// This is inherently racy. The actor could stop between this call and
     /// the next `send`. Use it only for cheap early-exit checks, not as a
     /// correctness guarantee.
+    #[must_use]
     #[inline]
     pub fn is_alive(&self) -> bool {
         !self.tx.is_closed()

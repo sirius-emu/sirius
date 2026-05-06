@@ -34,6 +34,7 @@ pub struct NitroDecoder {
 }
 
 impl NitroDecoder {
+    #[must_use]
     pub fn new() -> Self {
         Self::default()
     }
@@ -44,18 +45,15 @@ impl Decoder for NitroDecoder {
     type Error = SiriusError;
 
     fn decode(&mut self, src: &mut BytesMut) -> Result<Option<Self::Item>, Self::Error> {
-        let length = match self.pending_length {
-            Some(l) => l,
-            None => {
-                if src.len() < PacketHeader::LENGTH_FIELD_SIZE {
-                    src.reserve(PacketHeader::SIZE);
-                    return Ok(None);
-                }
-
-                let l = u32::from_be_bytes([src[0], src[1], src[2], src[3]]);
-                self.pending_length = Some(l);
-                l
+        let length = if let Some(l) = self.pending_length { l } else {
+            if src.len() < PacketHeader::LENGTH_FIELD_SIZE {
+                src.reserve(PacketHeader::SIZE);
+                return Ok(None);
             }
+
+            let l = u32::from_be_bytes([src[0], src[1], src[2], src[3]]);
+            self.pending_length = Some(l);
+            l
         };
 
         if (length as usize) < PacketHeader::MIN_LENGTH as usize {
@@ -68,13 +66,10 @@ impl Decoder for NitroDecoder {
         let body_len = (length as usize) - PacketHeader::ID_FIELD_SIZE;
 
         if body_len > MAX_BODY_LEN {
-            return Err(SiriusError::Protocol(ProtocolError::PacketTooShort {
-                // Repurposing PacketTooShort is a bit of a stretch here, but
-                // adding an Oversized variant is premature. This path should
-                // never be hit by a well-behaved client!
-                header_id: 0,
-                expected: MAX_BODY_LEN,
-                got: body_len,
+            self.pending_length = None;
+            return Err(SiriusError::Protocol(ProtocolError::PacketTooLarge {
+                body_len,
+                max: MAX_BODY_LEN,
             }));
         }
 

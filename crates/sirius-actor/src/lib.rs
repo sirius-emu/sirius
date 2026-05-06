@@ -10,11 +10,11 @@
 //! The pattern is intentionally minimal:
 //!
 //! - [`Actor`] is the trait your stateful struct implements. It defines the command type
-//! and the handler that processes each message.
+//!   and the handler that processes each message.
 //! - [`Handle`] is the only way to talk to a running actor from outside. It wraps an `mpsc`
-//! sender and hides the channel entirely.
+//!   sender and hides the channel entirely.
 //! - [`ActorContext`] is passed to the handler on every message. It gives the actor a way to
-//! send messages to itself and carries the actor's own handle for self-reference.
+//!   send messages to itself and carries the actor's own handle for self-reference.
 //!
 //! # Example
 //!

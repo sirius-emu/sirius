@@ -27,12 +27,13 @@ impl PacketHeader {
     ///
     /// The length field counts the header ID and body together. A packet
     /// with no body still has an ID, so the minimum is 2.
-    pub const MIN_LENGTH: u32 = Self::ID_FIELD_SIZE as u32;
+    pub const MIN_LENGTH: u32 = 2;
 
     /// Returns the number of body bytes this packet contains.
     ///
     /// This is `length - 2`. Callers can rely on this being non-negative
     /// because the decoder rejects packets where `length < MIN_LENGTH`.
+    #[must_use]
     pub fn body_len(self) -> usize {
         (self.length - Self::MIN_LENGTH) as usize
     }

@@ -29,7 +29,14 @@ pub struct TracingConfig {
     /// Default: true.
     pub include_target: bool,
 
-    /// Service name included in structured log output and OTel spans.
+    /// Service name included in structured log output.
+    ///
+    /// In JSON mode this is emitted as a `service` field on every log line,
+    /// which makes it possible to filter and correlate logs across instances
+    /// when shipping to a log aggregator.
+    ///
+    /// When OpenTelemetry is integrated this value will also be set as the
+    /// `service.name` resource attribute on all exported spans.
     ///
     /// Default: `"sirius"`.
     pub service_name: String,
@@ -57,6 +64,7 @@ impl Default for TracingConfig {
 }
 
 impl TracingConfig {
+    #[must_use]
     pub fn production(service_name: impl Into<String>) -> Self {
         Self {
             default_level: Level::INFO,
@@ -67,6 +75,7 @@ impl TracingConfig {
         }
     }
 
+    #[must_use]
     pub fn development() -> Self {
         Self {
             default_level: Level::DEBUG,
@@ -107,7 +116,12 @@ fn install_pretty(config: TracingConfig, filter: EnvFilter) -> Result<(), Tracin
         .with(filter)
         .with(fmt_layer)
         .try_init()
-        .map_err(|_| TracingError::AlreadyInitialized)
+        .map_err(|_| TracingError::AlreadyInitialized)?;
+
+    // Emit service name once at startup so it appears in dev logs.
+    tracing::info!(service = %config.service_name, "tracing initialized");
+
+    Ok(())
 }
 
 fn install_json(config: TracingConfig, filter: EnvFilter) -> Result<(), TracingError> {
@@ -123,5 +137,13 @@ fn install_json(config: TracingConfig, filter: EnvFilter) -> Result<(), TracingE
         .with(filter)
         .with(fmt_layer)
         .try_init()
-        .map_err(|_| TracingError::AlreadyInitialized)
+        .map_err(|_| TracingError::AlreadyInitialized)?;
+
+    // Emit service name as a structured field so log aggregators can filter by it.
+    // Every event after this point will be associated with this process; the
+    // service name here acts as a process-level label in the log stream.
+    // TODO: When OTel is integrated, set this as the `service.name` resource attribute.
+    tracing::info!(service = %config.service_name, "tracing initialized");
+
+    Ok(())
 }

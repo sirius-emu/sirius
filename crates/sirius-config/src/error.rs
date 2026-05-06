@@ -16,7 +16,7 @@ pub enum ConfigError {
 
     /// A field passed deserialization but failed semantic validation.
     ///
-    /// Examples: port 0, empty database URL, max_connections less than 1.
+    /// Examples: port 0, empty database URL, `max_connections` less than 1.
     #[error("invalid value for '{field}': {reason}")]
     InvalidValue { field: &'static str, reason: String },
 }

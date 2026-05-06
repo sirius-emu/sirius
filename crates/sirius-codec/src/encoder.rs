@@ -18,6 +18,7 @@ use tracing::trace;
 pub struct NitroEncoder;
 
 impl NitroEncoder {
+    #[must_use]
     pub fn new() -> Self {
         Self {}
     }
@@ -30,11 +31,15 @@ impl Encoder<RawPacket> for NitroEncoder {
         let body_len = packet.body.len();
 
         let length = PacketHeader::MIN_LENGTH
-            .checked_add(body_len as u32)
+            .checked_add(
+                u32::try_from(body_len).unwrap_or_else(|_| {
+                    panic!("encoder body length {body_len} overflows u32")
+                }),
+            )
             .ok_or_else(|| {
                 SiriusError::Protocol(ProtocolError::EncodingFailed {
                     header_id: packet.header.id,
-                    reason: format!("body length {} overflows u32", body_len),
+                    reason: format!("body length {body_len} overflows u32"),
                 })
             })?;
 

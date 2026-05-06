@@ -31,15 +31,24 @@ impl RawPacket {
     /// Constructs a `RawPacket` from a header ID and a body.
     ///
     /// The `length` field in the header is computed automatically.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `body.len()` exceeds `u32::MAX - 2`. In practice, the decoder
+    /// enforces `MAX_BODY_LEN = 65_535`, so this can only be triggered by
+    /// hand-constructed packets with unreasonably large bodies.
     pub fn new(id: u16, body: Bytes) -> Self {
-        let length = PacketHeader::MIN_LENGTH + body.len() as u32;
+        let body_len = u32::try_from(body.len())
+            .unwrap_or_else(|_| panic!("RawPacket body too large: {} bytes", body.len()));
+        let length = PacketHeader::MIN_LENGTH + body_len;
         Self {
             header: PacketHeader { length, id },
             body,
         }
     }
 
-    // Constructs a `RawPacket` with an empty body.
+    /// Constructs a `RawPacket` with an empty body.
+    #[must_use]
     pub fn empty(id: u16) -> Self {
         Self::new(id, Bytes::new())
     }

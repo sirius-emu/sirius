@@ -41,6 +41,14 @@ pub enum ProtocolError {
     #[error("packet length mismatch: header declares {declared}, frame contains {actual}")]
     LengthMismatch { declared: u32, actual: usize },
 
+    /// The packet body exceeds the maximum allowed size.
+    ///
+    /// This is returned by the decoder when the `length` field in the header
+    /// indicates a body that would exceed `MAX_BODY_LEN`. The connection
+    /// should be closed; well-behaved clients never send packets this large.
+    #[error("packet body too large: {body_len} bytes exceeds maximum of {max} bytes")]
+    PacketTooLarge { body_len: usize, max: usize },
+
     /// A packet could not be encoded for sending.
     #[error("failed to encode packet {header_id}: {reason}")]
     EncodingFailed { header_id: u16, reason: String },

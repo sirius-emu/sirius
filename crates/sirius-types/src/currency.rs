@@ -8,8 +8,10 @@
 //! represents deductions in transaction records. Enforcement of non-negative
 //! balances is the responsibility of `sirius-currency`, not this crate.
 
+use serde::{Deserialize, Serialize};
 use std::fmt;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum Currency {
     Credits(i64),
     Pixels(i64),
@@ -18,6 +20,7 @@ pub enum Currency {
 
 impl Currency {
     /// Returns the numeric amount, regardless of denomination.
+    #[must_use]
     #[inline]
     pub const fn amount(self) -> i64 {
         match self {
@@ -26,6 +29,7 @@ impl Currency {
     }
 
     /// Returns a new `Currency` of the same denomination with the given amount.
+    #[must_use]
     #[inline]
     pub const fn with_amount(self, amount: i64) -> Self {
         match self {
@@ -38,6 +42,7 @@ impl Currency {
     /// Returns the protocol type ID for this currency.
     ///
     /// Matches the values the Nitro client expects in wallet update packets.
+    #[must_use]
     #[inline]
     pub const fn type_id(self) -> i32 {
         match self {
@@ -51,9 +56,9 @@ impl Currency {
 impl fmt::Display for Currency {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Credits(n) => write!(f, "{} credits", n),
-            Self::Pixels(n) => write!(f, "{} pixels", n),
-            Self::Diamonds(n) => write!(f, "{} diamonds", n),
+            Self::Credits(n) => write!(f, "{n} credits"),
+            Self::Pixels(n) => write!(f, "{n} pixels"),
+            Self::Diamonds(n) => write!(f, "{n} diamonds"),
         }
     }
 }

@@ -56,6 +56,7 @@ pub struct NitroCodec {
 }
 
 impl NitroCodec {
+    #[must_use]
     pub fn new() -> Self {
         Self::default()
     }

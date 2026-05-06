@@ -3,10 +3,11 @@ use crate::handle::Handle;
 /// Passed to [`Actor::handle`], [`Actor::on_start`], and [`Actor::on_stop`].
 ///
 /// Gives the actor a reference to its own handle, which enables two things:
+///
 /// 1. **Self-messaging:** the actor can send commands to itself. This is the standard way to
-/// schedule deferred work or implement internal ticks without an external timer.
+///    schedule deferred work or implement internal ticks without an external timer.
 /// 2. **Handle sharing:** the actor can hand its own handle to callbacks, futures or
-/// spawned subtasks that need to send it messages later.
+///    spawned subtasks that need to send it messages later.
 ///
 /// # Example
 /// ```no_run
@@ -40,7 +41,6 @@ use crate::handle::Handle;
 /// [`Actor::handle`]: crate::Actor::handle
 /// [`Actor::on_start`]: crate::Actor::on_start
 /// [`Actor::on_stop`]: crate::Actor::on_stop
-/// ```
 #[derive(Debug)]
 pub struct ActorContext<C> {
     handle: Handle<C>,
@@ -54,6 +54,7 @@ impl<C> ActorContext<C> {
     /// Returns a reference to the actor's own handle.
     ///
     /// Clone this if you need to move it into a spawned task or a closure.
+    #[must_use]
     #[inline]
     pub fn handle(&self) -> &Handle<C> {
         &self.handle

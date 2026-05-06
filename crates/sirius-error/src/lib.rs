@@ -8,16 +8,18 @@
 //! # Design
 //!
 //! - Subsystem errors are defined in their own modules and re-exported at
-//! the crate root for convenience.
+//!   the crate root for convenience.
 //! - `SiriusError` is the boundary type. It's what crosses crate lines.
-//! Within a single crate, prefer the specific subystem error directly.
+//!   Within a single crate, prefer the specific subystem error directly.
 //! - All conversions are via `#[from]`, so `?` works everywhere without
-//! manual `map_err` calls.
+//!   manual `map_err` calls.
 
+mod actor;
 mod auth;
 mod network;
 mod protocol;
 
+pub use actor::ActorError;
 pub use auth::AuthError;
 pub use network::NetworkError;
 pub use protocol::ProtocolError;
@@ -31,6 +33,9 @@ use thiserror::Error;
 /// directly. It carries more context and avoids an unnecessary wrapping layer.
 #[derive(Debug, Error)]
 pub enum SiriusError {
+    #[error(transparent)]
+    Actor(#[from] ActorError),
+
     #[error(transparent)]
     Network(#[from] NetworkError),
 

@@ -20,6 +20,7 @@ pub enum Gender {
 impl Gender {
     /// Returns the single-character representation used in figure strings
     /// and the client protocol.
+    #[must_use]
     #[inline]
     pub const fn as_char(self) -> char {
         match self {

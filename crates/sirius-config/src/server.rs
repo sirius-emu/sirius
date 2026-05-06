@@ -55,6 +55,16 @@ impl ServerConfig {
             });
         }
 
+        self.bind_address
+            .parse::<std::net::IpAddr>()
+            .map_err(|_| ConfigError::InvalidValue {
+                field: "server.bind_address",
+                reason: format!(
+                    "\"{}\" is not a valid IP address (e.g. \"0.0.0.0\" or \"127.0.0.1\")",
+                    self.bind_address
+                ),
+            })?;
+
         if self.max_connections == 0 {
             return Err(ConfigError::InvalidValue {
                 field: "server.max_connections",
