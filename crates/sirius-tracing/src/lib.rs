@@ -41,9 +41,8 @@ pub use subscriber::TracingConfig;
 /// ```no_run
 /// use sirius_tracing::TracingConfig;
 ///
-/// #[tokio::main]
-/// async fn main() {
-///     sirius_tracing::init(TracingConfig::default().expect("failed to init tracing"));
+/// fn main() {
+///     sirius_tracing::init(TracingConfig::default()).expect("failed to init tracing");
 ///     tracing::info!("server starting");
 /// }
 /// ```

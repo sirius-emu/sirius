@@ -41,7 +41,7 @@
 //!     ) -> Result<(), SiriusError> {
 //!         match cmd {
 //!             CounterCommand::Increment => self.count += 1,
-//!             CounterCommand::GetCount { reply } => let _ = reply.send(self.count); }
+//!             CounterCommand::GetCount { reply } => { let _ = reply.send(self.count); }
 //!         }
 //!         Ok(())
 //!     }

@@ -40,3 +40,9 @@ pub enum SiriusError {
     #[error(transparent)]
     Auth(#[from] AuthError),
 }
+
+impl From<std::io::Error> for SiriusError {
+    fn from(err: std::io::Error) -> Self {
+        SiriusError::Network(err.into())
+    }
+}

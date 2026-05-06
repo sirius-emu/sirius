@@ -16,7 +16,7 @@ use tracing::{debug, error};
 /// [`on_stop`] is called once after the mailbox is closed and all pending
 /// messages have been drained. Both have default no-op implementations.
 ///
-/// # Stopping
+/// # Stopping
 ///
 /// An actor stops when:
 /// - Its mailbox is closed (all [`Handle`]s have been dropped)

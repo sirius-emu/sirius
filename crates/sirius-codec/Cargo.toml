@@ -1,9 +1,11 @@
 [package]
-name = "sirius-actor"
+name = "sirius-codec"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+bytes = "1.11.1"
 sirius-error = { path = "../sirius-error" }
-tokio = { workspace = true, features = ["time"] }
 tracing.workspace = true
+tokio.workspace = true
+tokio-util = { version = "0.7.18", features = ["codec"] }
