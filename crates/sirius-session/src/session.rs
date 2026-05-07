@@ -6,6 +6,7 @@ use sirius_codec::RawPacket;
 use sirius_error::SiriusError;
 use sirius_network::{Connection, ConnectionId};
 use sirius_packets::incoming::{ReleaseVersionPacket, SsoTicketPacket};
+use sirius_packets::outgoing::AuthOkComposer;
 use sirius_packets::{IncomingPacket, OutgoingPacket};
 use sirius_types::UserId;
 use std::net::SocketAddr;
@@ -125,6 +126,33 @@ impl Session {
 
         Ok(())
     }
+
+    async fn on_auth_success(
+        &mut self,
+        user_id: UserId,
+    ) -> Result<(), SiriusError> {
+        self.auth_state = AuthState::Authenticated(user_id);
+
+        info!(
+            id = %self.id,
+            %user_id,
+            peer = %self.peer_addr,
+            "session authenticated"
+        );
+
+        self.compose(&AuthOkComposer).await?;
+
+        Ok(())
+    }
+
+    async fn on_auth_failure(
+        &mut self,
+        reason: &str,
+    ) -> Result<(), SiriusError> {
+        warn!(id = %self.id, %reason, "authentication failed, closing session");
+        self.auth_state = AuthState::Closing;
+        Ok(())
+    }
 }
 
 impl Actor for Session {
@@ -157,6 +185,14 @@ impl Actor for Session {
                 self.send(packet).await;
             }
 
+            SessionCommand::AuthSuccess { user_id } => {
+                self.on_auth_success(user_id).await?;
+            }
+
+            SessionCommand::AuthFailure { reason } => {
+                self.on_auth_failure(&reason).await?;
+            }
+
             SessionCommand::Close { reason } => {
                 info!(id = %self.id, %reason, "session closing");
                 self.auth_state = AuthState::Closing;
@@ -164,8 +200,6 @@ impl Actor for Session {
                     sirius_error::AuthError::NotAuthenticated,
                 ));
             }
-
-            _ => {}
         }
 
         Ok(())
