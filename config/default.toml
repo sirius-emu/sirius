@@ -13,6 +13,14 @@ bind_address = "127.0.0.1"
 max_connections = 2000
 shutdown_timeout_secs = 30
 
+[database]
+url = "postgres://cukubik:helloworld@localhost:5432/sirius"
+max_connections = 10
+min_connections = 10
+acquire_timeout_secs = 5
+max_lifetime_secs = 1800
+run_migrations = false
+
 [network]
 read_timeout_secs = 120
 write_timeout_secs = 30

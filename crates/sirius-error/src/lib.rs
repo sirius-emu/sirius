@@ -16,11 +16,13 @@
 
 mod actor;
 mod auth;
+mod database;
 mod network;
 mod protocol;
 
 pub use actor::ActorError;
 pub use auth::AuthError;
+pub use database::DatabaseError;
 pub use network::NetworkError;
 pub use protocol::ProtocolError;
 
@@ -44,6 +46,9 @@ pub enum SiriusError {
 
     #[error(transparent)]
     Auth(#[from] AuthError),
+
+    #[error(transparent)]
+    Database(#[from] DatabaseError),
 }
 
 impl From<std::io::Error> for SiriusError {

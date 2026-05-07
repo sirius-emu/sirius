@@ -30,10 +30,12 @@
 //! println!("listening on port {}", config.server.port);
 //! ```
 
+mod database;
 mod error;
 mod network;
 mod server;
 
+pub use database::DatabaseConfig;
 pub use error::ConfigError;
 pub use network::NetworkConfig;
 pub use server::ServerConfig;
@@ -50,6 +52,7 @@ use serde::Deserialize;
 pub struct Config {
     pub server: ServerConfig,
     pub network: NetworkConfig,
+    pub database: DatabaseConfig,
 }
 
 impl Config {
@@ -91,6 +94,7 @@ impl Config {
     pub fn validate(&self) -> Result<(), ConfigError> {
         self.server.validate()?;
         self.network.validate()?;
+        self.database.validate()?;
         Ok(())
     }
 }
