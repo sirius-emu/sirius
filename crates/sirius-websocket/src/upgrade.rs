@@ -2,8 +2,8 @@
 
 use std::net::SocketAddr;
 use tokio::net::TcpStream;
-use tokio_tungstenite::tungstenite::handshake::server::{Request, Response};
 use tokio_tungstenite::WebSocketStream;
+use tokio_tungstenite::tungstenite::handshake::server::{Request, Response};
 use tracing::{debug, warn};
 
 /// Result of an upgrade attempt.
@@ -21,7 +21,11 @@ pub enum UpgradeResult {
 ///
 /// `expected_path` is the URI path the server expects (e.g. `"/”`).
 /// If the client requests a different path, the upgrade is rejected with 404.
-pub async fn accept_async(stream: TcpStream, expected_path: &str, peer_addr: SocketAddr) -> UpgradeResult {
+pub async fn accept_async(
+    stream: TcpStream,
+    expected_path: &str,
+    peer_addr: SocketAddr,
+) -> UpgradeResult {
     let mut path_matched = false;
 
     // The callback lets us inspect the HTTP request before accepting the upgrade.

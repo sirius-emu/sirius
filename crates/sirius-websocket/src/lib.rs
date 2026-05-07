@@ -7,4 +7,4 @@ mod stream;
 mod upgrade;
 
 pub use stream::WsStream;
-pub use upgrade::{accept_async, UpgradeResult};
+pub use upgrade::{UpgradeResult, accept_async};

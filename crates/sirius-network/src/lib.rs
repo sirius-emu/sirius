@@ -27,4 +27,4 @@ mod manager;
 pub use connection::{Connection, ConnectionId};
 pub use limiter::RateLimiter;
 pub use listener::Listener;
-pub use manager::ConnectionManager;
+pub use manager::{ConnectionManager, spawn_cleanup_task};

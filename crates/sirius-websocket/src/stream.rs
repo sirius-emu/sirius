@@ -7,8 +7,8 @@ use sirius_error::{NetworkError, SiriusError};
 use std::time::Duration;
 use tokio::net::TcpStream;
 use tokio::time;
-use tokio_tungstenite::tungstenite::Message;
 use tokio_tungstenite::WebSocketStream;
+use tokio_tungstenite::tungstenite::Message;
 use tokio_util::codec::{Decoder, Encoder};
 use tracing::{trace, warn};
 
@@ -54,12 +54,11 @@ impl WsStream {
 
             tokio::select! {
                 _ = self.ping_interval.tick() => {
-                    // Time to send a heartbeat
                     trace!("sending websocket ping");
                     self.send_ping().await?;
                     continue;
                 }
-                
+
                 result = time::timeout(timeout, self.inner.next()) => {
                     match result {
                         Err(_) => {
@@ -83,7 +82,6 @@ impl WsStream {
                             match msg {
                                 Message::Binary(data) => {
                                     self.read_buf.put_slice(&data);
-                                    // The loop will jump to the top and decode the buffer
                                 }
                                 Message::Text(_) => {
                                     warn!("received text frame from client, ignoring");
@@ -116,7 +114,7 @@ impl WsStream {
     pub async fn send(&mut self, packet: RawPacket) -> Result<(), SiriusError> {
         self.write_buf.clear();
         self.codec.encode(packet, &mut self.write_buf)?;
-        
+
         let msg = Message::Binary(self.write_buf.split().freeze());
         self.inner.send(msg).await.map_err(|e| {
             SiriusError::Network(NetworkError::Io(std::io::Error::new(
@@ -127,11 +125,14 @@ impl WsStream {
     }
 
     async fn send_ping(&mut self) -> Result<(), SiriusError> {
-        self.inner.send(Message::Ping(bytes::Bytes::new())).await.map_err(|e| {
-            SiriusError::Network(NetworkError::Io(std::io::Error::new(
-                std::io::ErrorKind::BrokenPipe,
-                e.to_string(),
-            )))
-        })
+        self.inner
+            .send(Message::Ping(bytes::Bytes::new()))
+            .await
+            .map_err(|e| {
+                SiriusError::Network(NetworkError::Io(std::io::Error::new(
+                    std::io::ErrorKind::BrokenPipe,
+                    e.to_string(),
+                )))
+            })
     }
 }

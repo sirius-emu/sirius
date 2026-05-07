@@ -130,7 +130,8 @@ async fn run(
     if is_websocket {
         match sirius_websocket::accept_async(stream, &config.websocket_path, peer_addr).await {
             sirius_websocket::UpgradeResult::Success(ws_stream) => {
-                let ws = sirius_websocket::WsStream::new(ws_stream, config.websocket_ping_interval_secs);
+                let ws =
+                    sirius_websocket::WsStream::new(ws_stream, config.websocket_ping_interval_secs);
                 run_ws(id, ws, config, inbound_tx, outbound_rx).await;
             }
             sirius_websocket::UpgradeResult::Rejected | sirius_websocket::UpgradeResult::Failed => {
