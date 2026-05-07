@@ -1,0 +1,16 @@
+[package]
+name = "sirius-session"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+sirius-error = { path = "../sirius-error" }
+sirius-types = { path = "../sirius-types" }
+sirius-actor = { path = "../sirius-actor" }
+sirius-codec = { path = "../sirius-codec" }
+sirius-packets = { path = "../sirius-packets" }
+sirius-network = { path = "../sirius-network" }
+tokio.workspace = true
+tracing.workspace = true
+uuid = "1.23.1"
+dashmap.workspace = true

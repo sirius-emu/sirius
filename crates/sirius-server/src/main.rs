@@ -17,9 +17,10 @@ fn print_sirius_banner() {
         "Safe, concurrent and ready to host.",
         "Thanks for the roadmap, Morningstar.",
         "A new star for a new era.",
-        "Rocking 2026, just like they promised.",
+        "Rocking in 2026, just like they promised.",
         "Shining brighter than the Morningstar.",
         "Who needs a CMS when the emulator is this beautiful?",
+        "Parsing packets faster than you can say bobba.",
     ];
 
     let mut rng = rand::rng();
@@ -34,9 +35,9 @@ fn print_sirius_banner() {
               ███ ███  ▀███████████ ███  ███    ███          ███
         ▄█    ███ ███    ███    ███ ███  ███    ███    ▄█    ███
       ▄████████▀  █▀     ███    ███ █▀   ████████▀   ▄████████▀
-                         ███    ███"#;
+"#;
 
-    let banner = format!("{}\n\n      v{} | {}", ascii_art, version, selected_quote);
+    let banner = format!("{}\n      v{} | {}", ascii_art, version, selected_quote);
 
     let start_color = (200.0, 230.0, 255.0);
     let end_color = (0.0, 80.0, 255.0);
