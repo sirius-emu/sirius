@@ -5,7 +5,9 @@ use sirius_actor::{Actor, ActorContext};
 use sirius_codec::RawPacket;
 use sirius_error::SiriusError;
 use sirius_network::{Connection, ConnectionId};
-use sirius_packets::incoming::{ReleaseVersionPacket, SsoTicketPacket};
+use sirius_packets::incoming::{
+    PongPacket, ReleaseVersionPacket, SsoTicketPacket,
+};
 use sirius_packets::outgoing::AuthOkComposer;
 use sirius_packets::{IncomingPacket, OutgoingPacket};
 use sirius_types::UserId;
@@ -72,6 +74,7 @@ impl Session {
             ReleaseVersionPacket::HEADER_ID => {
                 self.on_release_version(raw).await
             }
+            PongPacket::HEADER_ID => self.on_pong(raw).await,
             SsoTicketPacket::HEADER_ID => self.on_sso_ticket(raw, ctx).await,
             _ => {
                 // Unknown or not-yet-implemented packet.
@@ -97,6 +100,11 @@ impl Session {
             "client release version"
         );
 
+        Ok(())
+    }
+
+    async fn on_pong(&mut self, raw: RawPacket) -> Result<(), SiriusError> {
+        debug!(id = %self.id, "pong received");
         Ok(())
     }
 

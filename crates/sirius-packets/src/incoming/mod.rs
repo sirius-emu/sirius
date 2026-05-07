@@ -6,4 +6,6 @@
 
 pub mod handshake;
 
-pub use handshake::{ReleaseVersionPacket, SsoTicketPacket};
+pub use handshake::{
+    PingPacket, PongPacket, ReleaseVersionPacket, SsoTicketPacket,
+};
