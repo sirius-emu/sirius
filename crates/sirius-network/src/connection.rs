@@ -48,9 +48,13 @@ impl std::fmt::Display for ConnectionId {
 }
 
 /// Configuration for a single connection task.
+#[derive(Clone)]
 pub struct ConnectionConfig {
     pub read_timeout: Duration,
     pub write_timeout: Duration,
+    pub websocket_enabled: bool,
+    pub websocket_path: String,
+    pub websocket_ping_interval_secs: u64,
 }
 
 /// A live TCP connection, represented as a running tokio task.
@@ -102,31 +106,62 @@ impl Connection {
     }
 }
 
-/// The connection task body.
 async fn run(
     id: ConnectionId,
     stream: TcpStream,
     peer_addr: SocketAddr,
     config: ConnectionConfig,
     inbound_tx: mpsc::Sender<RawPacket>,
-    mut outbound_rx: mpsc::Receiver<RawPacket>,
+    outbound_rx: mpsc::Receiver<RawPacket>,
     close_tx: mpsc::Sender<ConnectionId>,
 ) {
     debug!(%id, %peer_addr, "connection accepted");
 
-    let mut framed = Framed::new(stream, NitroCodec::new());
+    let mut is_websocket = false;
+    if config.websocket_enabled {
+        let mut peek_buf = [0; 3];
+        if let Ok(3) = stream.peek(&mut peek_buf).await {
+            if &peek_buf == b"GET" {
+                is_websocket = true;
+            }
+        }
+    }
 
+    if is_websocket {
+        match sirius_websocket::accept_async(stream, &config.websocket_path, peer_addr).await {
+            sirius_websocket::UpgradeResult::Success(ws_stream) => {
+                let ws = sirius_websocket::WsStream::new(ws_stream, config.websocket_ping_interval_secs);
+                run_ws(id, ws, config, inbound_tx, outbound_rx).await;
+            }
+            sirius_websocket::UpgradeResult::Rejected | sirius_websocket::UpgradeResult::Failed => {
+                debug!(%id, "websocket upgrade rejected or failed");
+            }
+        }
+    } else {
+        let framed = Framed::new(stream, NitroCodec::new());
+        run_tcp(id, framed, config, inbound_tx, outbound_rx).await;
+    }
+
+    let _ = close_tx.send(id).await;
+    debug!(%id, "connection task exited");
+}
+
+async fn run_tcp(
+    id: ConnectionId,
+    mut framed: Framed<TcpStream, NitroCodec>,
+    config: ConnectionConfig,
+    inbound_tx: mpsc::Sender<RawPacket>,
+    mut outbound_rx: mpsc::Receiver<RawPacket>,
+) {
     loop {
         tokio::select! {
             result = time::timeout(config.read_timeout, framed.next()) => {
                 match result {
                     Err(_) => {
-                        // Read timeout
                         debug!(%id, "read timeout, closing connection");
                         break;
                     }
                     Ok(None) => {
-                        // EOF
                         debug!(%id, "connection closed by client");
                         break;
                     }
@@ -136,7 +171,6 @@ async fn run(
                     }
                     Ok(Some(Ok(packet))) => {
                         trace!(%id, header_id = packet.id(), "received packet");
-                        // If the inbound channel is closed, the session is gone.
                         if inbound_tx.send(packet).await.is_err() {
                             debug!(%id, "session dropped inbound channel, closing connection");
                             break;
@@ -153,10 +187,7 @@ async fn run(
                     }
                     Some(packet) => {
                         trace!(%id, header_id = packet.id(), "sending packet");
-                        let send = time::timeout(
-                            config.write_timeout,
-                            framed.send(packet),
-                        );
+                        let send = time::timeout(config.write_timeout, framed.send(packet));
                         if let Err(e) = send.await
                             .map_err(|_| SiriusError::Network(NetworkError::Timeout {
                                 seconds: config.write_timeout.as_secs(),
@@ -171,7 +202,58 @@ async fn run(
             }
         }
     }
+}
 
-    let _ = close_tx.send(id).await;
-    debug!(%id, "connection task exited");
+async fn run_ws(
+    id: ConnectionId,
+    mut ws: sirius_websocket::WsStream,
+    config: ConnectionConfig,
+    inbound_tx: mpsc::Sender<RawPacket>,
+    mut outbound_rx: mpsc::Receiver<RawPacket>,
+) {
+    loop {
+        tokio::select! {
+            result = ws.next(config.read_timeout) => {
+                match result {
+                    Err(e) => {
+                        warn!(%id, error = %e, "websocket error, closing connection");
+                        break;
+                    }
+                    Ok(None) => {
+                        debug!(%id, "connection closed by client");
+                        break;
+                    }
+                    Ok(Some(packet)) => {
+                        trace!(%id, header_id = packet.id(), "received packet over ws");
+                        if inbound_tx.send(packet).await.is_err() {
+                            debug!(%id, "session dropped inbound channel, closing connection");
+                            break;
+                        }
+                    }
+                }
+            }
+
+            packet = outbound_rx.recv() => {
+                match packet {
+                    None => {
+                        debug!(%id, "outbound channel closed, closing connection");
+                        break;
+                    }
+                    Some(packet) => {
+                        trace!(%id, header_id = packet.id(), "sending packet over ws");
+                        let send = time::timeout(config.write_timeout, ws.send(packet));
+                        if let Err(e) = send.await
+                            .map_err(|_| SiriusError::Network(NetworkError::Timeout {
+                                seconds: config.write_timeout.as_secs(),
+                            }))
+                            .and_then(|r| r)
+                        {
+                            warn!(%id, error = %e, "ws write error, closing connection");
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

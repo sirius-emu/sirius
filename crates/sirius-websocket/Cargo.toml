@@ -1,18 +1,16 @@
 [package]
-name = "sirius-network"
+name = "sirius-websocket"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
 sirius-error = { path = "../sirius-error" }
-sirius-types = { path = "../sirius-types" }
-sirius-config = { path = "../sirius-config" }
 sirius-codec = { path = "../sirius-codec" }
-sirius-actor = { path = "../sirius-actor" }
-sirius-websocket = { path = "../sirius-websocket" }
+sirius-config = { path = "../sirius-config" }
 tokio.workspace = true
 tokio-util.workspace = true
 bytes.workspace = true
 tracing.workspace = true
-dashmap = "6.1.0"
+tokio-tungstenite = "0.26.1"
 futures-util = { version = "0.3.32", features = ["sink"] }
+http = "1.2.0"

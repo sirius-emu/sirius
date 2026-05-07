@@ -57,6 +57,9 @@ impl Listener {
         let conn_config = Arc::new(ConnectionConfig {
             read_timeout: Duration::from_secs(network_config.read_timeout_secs),
             write_timeout: Duration::from_secs(network_config.write_timeout_secs),
+            websocket_enabled: network_config.websocket_enabled,
+            websocket_path: network_config.websocket_path.clone(),
+            websocket_ping_interval_secs: network_config.websocket_ping_interval_secs,
         });
 
         Ok(Self {
@@ -135,6 +138,9 @@ impl Listener {
             ConnectionConfig {
                 read_timeout: self.conn_config.read_timeout,
                 write_timeout: self.conn_config.write_timeout,
+                websocket_enabled: self.conn_config.websocket_enabled,
+                websocket_path: self.conn_config.websocket_path.clone(),
+                websocket_ping_interval_secs: self.conn_config.websocket_ping_interval_secs,
             },
             self.close_tx.clone(),
         );
