@@ -16,7 +16,7 @@ shutdown_timeout_secs = 30
 [database]
 url = "postgres://cukubik:helloworld@localhost:5432/sirius"
 max_connections = 10
-min_connections = 10
+min_connections = 1
 acquire_timeout_secs = 5
 max_lifetime_secs = 1800
 run_migrations = false
