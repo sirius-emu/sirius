@@ -14,7 +14,4 @@ pub enum TracingError {
     /// The `RUST_LOG` directive string is syntactically invalid.
     #[error("invalid log filter directive: {0}")]
     InvalidFilter(String),
-
-    #[error("invalid tracing format: {0}. expected 'pretty' or 'json'")]
-    InvalidFormat(String),
 }

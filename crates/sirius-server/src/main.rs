@@ -28,7 +28,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     };
 
-    sirius_tracing::init(&config.tracing)?;
+    if let Err(e) = sirius_tracing::init(&config.tracing) {
+        eprintln!("Tracing initialization error: {}", e);
+        std::process::exit(1);
+    }
+
     info!("Starting Sirius");
 
     let db = Database::connect(&config.database).await?;

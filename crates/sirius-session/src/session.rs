@@ -238,7 +238,7 @@ impl Actor for Session {
                 self.handle_inbound(packet, ctx).await?;
             }
             SessionCommand::SendPacket(packet) => {
-                self.send(packet).await;
+                self.send(packet).await?;
             }
             SessionCommand::AuthSuccess { user_id } => {
                 self.on_auth_success(user_id, ctx).await?;

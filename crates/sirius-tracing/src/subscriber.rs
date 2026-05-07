@@ -6,15 +6,6 @@ use tracing_subscriber::{
     EnvFilter, fmt, layer::SubscriberExt, util::SubscriberInitExt,
 };
 
-/// The output format for log events.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum Format {
-    /// Colorized, human-readable output. Use during local development.
-    Pretty,
-    /// One JSON object per log line. Use in production.
-    Json,
-}
-
 pub(crate) fn install(config: &TracingConfig) -> Result<(), TracingError> {
     let filter = EnvFilter::try_from_default_env().or_else(|_| {
         EnvFilter::try_new(&config.default_level)
