@@ -1,13 +1,28 @@
 //! Top-level tracing configuration.
 
 use crate::ConfigError;
-use serde::Deserialize;
+use serde::{Deserialize, Deserializer};
 
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
-#[serde(rename_all(deserialize = "lowercase"))]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum TracingFormat {
     Pretty,
     Json,
+    Unknown,
+}
+
+impl<'de> Deserialize<'de> for TracingFormat {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+
+        Ok(match s.to_lowercase().as_str() {
+            "pretty" => TracingFormat::Pretty,
+            "json" => TracingFormat::Json,
+            _ => TracingFormat::Unknown,
+        })
+    }
 }
 
 /// Controls how the tracing subscriber is configured.
@@ -56,6 +71,14 @@ impl TracingConfig {
             return Err(ConfigError::InvalidValue {
                 field: "tracing.service_name",
                 reason: "service_name cannot be empty".into(),
+            });
+        }
+
+        if self.format == TracingFormat::Unknown {
+            return Err(ConfigError::InvalidValue {
+                field: "tracing.format",
+                reason: "unsupported format. Please use 'pretty' or 'json'."
+                    .into(),
             });
         }
 

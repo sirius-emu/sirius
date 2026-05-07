@@ -20,7 +20,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     });
 
-    let config = Config::load(&env_name)?;
+    let config = match Config::load(&env_name) {
+        Ok(c) => c,
+        Err(e) => {
+            eprintln!("Configuration error: {}", e);
+            std::process::exit(1);
+        }
+    };
 
     sirius_tracing::init(&config.tracing)?;
     info!("Starting Sirius");

@@ -24,6 +24,7 @@ pub(crate) fn install(config: &TracingConfig) -> Result<(), TracingError> {
     match config.format {
         TracingFormat::Pretty => install_pretty(config, filter),
         TracingFormat::Json => install_json(config, filter),
+        TracingFormat::Unknown => unreachable!(),
     }
 }
 

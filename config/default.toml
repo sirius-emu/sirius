@@ -16,7 +16,7 @@ shutdown_timeout_secs = 30
 [tracing]
 service_name = "sirius"
 default_level = "info"
-format = "pretty"
+format = "qweqwe"
 include_location = false
 include_target = true
 
