@@ -25,7 +25,7 @@ mod error;
 mod subscriber;
 
 pub use error::TracingError;
-pub use subscriber::TracingConfig;
+use sirius_config::TracingConfig;
 
 /// Initializes the global tracing subscriber.
 ///
@@ -46,6 +46,6 @@ pub use subscriber::TracingConfig;
 ///     tracing::info!("server starting");
 /// }
 /// ```
-pub fn init(config: TracingConfig) -> Result<(), TracingError> {
+pub fn init(config: &TracingConfig) -> Result<(), TracingError> {
     subscriber::install(config)
 }

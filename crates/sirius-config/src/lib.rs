@@ -34,11 +34,13 @@ mod database;
 mod error;
 mod network;
 mod server;
+mod tracing;
 
 pub use database::DatabaseConfig;
 pub use error::ConfigError;
 pub use network::NetworkConfig;
 pub use server::ServerConfig;
+pub use tracing::TracingConfig;
 
 use config::{Config as RawConfig, Environment, File, FileFormat};
 use serde::Deserialize;
@@ -53,6 +55,7 @@ pub struct Config {
     pub server: ServerConfig,
     pub network: NetworkConfig,
     pub database: DatabaseConfig,
+    pub tracing: TracingConfig,
 }
 
 impl Config {
@@ -95,6 +98,7 @@ impl Config {
         self.server.validate()?;
         self.network.validate()?;
         self.database.validate()?;
+        self.tracing.validate()?;
         Ok(())
     }
 }

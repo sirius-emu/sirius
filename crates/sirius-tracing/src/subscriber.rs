@@ -1,48 +1,11 @@
 //! Subscriber construction and installation.
 
 use crate::error::TracingError;
+use sirius_config::TracingConfig;
 use tracing::Level;
 use tracing_subscriber::{
     EnvFilter, fmt, layer::SubscriberExt, util::SubscriberInitExt,
 };
-
-/// Controls how the tracing subscriber is configured.
-#[derive(Debug, Clone)]
-pub struct TracingConfig {
-    /// The minimum log level when `RUST_LOG` is not set.
-    ///
-    /// Default: [`Level::INFO`].
-    pub default_level: Level,
-
-    /// Output format.
-    ///
-    /// Default: [`Format::Pretty`] in development, [`Format::Json`] in
-    /// production. Set this based on your `server.environment` config field.
-    pub format: Format,
-
-    /// Whether to include the source file and line number in log output.
-    ///
-    /// Useful in development. In production, the overhead is negligible but
-    /// the output is noisier. Default: true in pretty mode, false in JSON.
-    pub include_location: bool,
-
-    /// Whether to include the target (module path) in log output.
-    ///
-    /// Default: true.
-    pub include_target: bool,
-
-    /// Service name included in structured log output.
-    ///
-    /// In JSON mode this is emitted as a `service` field on every log line,
-    /// which makes it possible to filter and correlate logs across instances
-    /// when shipping to a log aggregator.
-    ///
-    /// When OpenTelemetry is integrated this value will also be set as the
-    /// `service.name` resource attribute on all exported spans.
-    ///
-    /// Default: `"sirius"`.
-    pub service_name: String,
-}
 
 /// The output format for log events.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -53,53 +16,20 @@ pub enum Format {
     Json,
 }
 
-impl Default for TracingConfig {
-    fn default() -> Self {
-        Self {
-            default_level: Level::INFO,
-            format: Format::Pretty,
-            include_location: true,
-            include_target: true,
-            service_name: "sirius".into(),
-        }
-    }
-}
+pub(crate) fn install(config: &TracingConfig) -> Result<(), TracingError> {
+    let filter = EnvFilter::try_from_default_env().or_else(|_| {
+        EnvFilter::try_new(&config.default_level)
+            .map_err(|e| TracingError::InvalidFilter(e.to_string()))
+    })?;
 
-impl TracingConfig {
-    #[must_use]
-    pub fn production(service_name: impl Into<String>) -> Self {
-        Self {
-            default_level: Level::INFO,
-            format: Format::Json,
-            include_location: false,
-            include_target: true,
-            service_name: service_name.into(),
-        }
-    }
-
-    #[must_use]
-    pub fn development() -> Self {
-        Self {
-            default_level: Level::DEBUG,
-            format: Format::Pretty,
-            include_location: true,
-            include_target: true,
-            service_name: "sirius".into(),
-        }
-    }
-}
-
-pub(crate) fn install(config: TracingConfig) -> Result<(), TracingError> {
-    let filter = build_filter(&config)?;
-
-    match config.format {
-        Format::Pretty => install_pretty(config, filter),
-        Format::Json => install_json(config, filter),
+    match config.format.as_str() {
+        "pretty" => install_pretty(config, filter),
+        "json" => install_json(config, filter),
+        other => Err(TracingError::InvalidFormat(other.to_string())),
     }
 }
 
 fn build_filter(config: &TracingConfig) -> Result<EnvFilter, TracingError> {
-    // RUST_LOG takes precedence. Fall back to the configured default level.
     EnvFilter::try_from_default_env().or_else(|_| {
         EnvFilter::try_new(config.default_level.as_str())
             .map_err(|e| TracingError::InvalidFilter(e.to_string()))
@@ -107,7 +37,7 @@ fn build_filter(config: &TracingConfig) -> Result<EnvFilter, TracingError> {
 }
 
 fn install_pretty(
-    config: TracingConfig,
+    config: &TracingConfig,
     filter: EnvFilter,
 ) -> Result<(), TracingError> {
     let fmt_layer = fmt::layer()
@@ -123,14 +53,13 @@ fn install_pretty(
         .try_init()
         .map_err(|_| TracingError::AlreadyInitialized)?;
 
-    // Emit service name once at startup so it appears in dev logs.
     tracing::info!(service = %config.service_name, "tracing initialized");
 
     Ok(())
 }
 
 fn install_json(
-    config: TracingConfig,
+    config: &TracingConfig,
     filter: EnvFilter,
 ) -> Result<(), TracingError> {
     let fmt_layer = fmt::layer()

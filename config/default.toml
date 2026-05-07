@@ -13,6 +13,13 @@ bind_address = "127.0.0.1"
 max_connections = 2000
 shutdown_timeout_secs = 30
 
+[tracing]
+service_name = "sirius"
+default_level = "info"
+format = "pretty"
+include_location = false
+include_target = true
+
 [database]
 url = "postgres://cukubik:helloworld@localhost:5432/sirius"
 max_connections = 10

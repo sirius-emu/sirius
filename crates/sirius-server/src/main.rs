@@ -12,9 +12,17 @@ use tracing::info;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let config = Config::load("development")?;
+    let env_name = std::env::var("SIRIUS_ENV").unwrap_or_else(|_| {
+        if cfg!(debug_assertions) {
+            "development".to_string()
+        } else {
+            "production".to_string()
+        }
+    });
 
-    sirius_tracing::init(sirius_tracing::TracingConfig::default())?;
+    let config = Config::load(&env_name)?;
+
+    sirius_tracing::init(&config.tracing)?;
     info!("Starting Sirius");
 
     let db = Database::connect(&config.database).await?;
@@ -43,7 +51,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let listener =
         Listener::bind(addr, &config.network, manager, close_tx).await?;
 
-    banner::print_sirius_banner();
+    banner::print_sirius_banner(config.server.environment);
 
     let session_manager = SessionManager::new();
 

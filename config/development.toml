@@ -2,5 +2,9 @@
 #
 # Merged on top of default.toml when the server runs with environment = "development".
 
-[server]
-environment = "development"
+[tracing]
+default_level = "debug"
+include_location = true
+
+[database]
+run_migrations = true

@@ -5,5 +5,10 @@
 
 [server]
 environment = "production"
-max_connection = 5000
-shutdown_timeout_secs = 60
+bind_address = "0.0.0.0"
+
+[tracing]
+format = "json"
+
+[database]
+max_connactions = 50

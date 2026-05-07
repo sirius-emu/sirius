@@ -1444,6 +1444,7 @@ dependencies = [
 name = "sirius-tracing"
 version = "0.1.0"
 dependencies = [
+ "sirius-config",
  "thiserror",
  "tokio",
  "tracing",
