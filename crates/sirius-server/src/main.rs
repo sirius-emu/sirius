@@ -3,6 +3,7 @@
 use rand::seq::IndexedRandom;
 use sirius_config::Config;
 use sirius_network::{ConnectionManager, Listener, spawn_cleanup_task};
+use sirius_session::spawn_session;
 use std::net::SocketAddr;
 use tokio::sync::{mpsc, watch};
 use tracing::info;
@@ -91,19 +92,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     listener
         .run(shutdown_rx, |mut connection| async move {
-            info!(id = %connection.id, peer = %connection.peer_addr, "accepted new connection");
-
-            tokio::spawn(async move {
-                while let Some(packet) = connection.inbound_rx.recv().await {
-                    info!(
-                         id = %connection.id,
-                         header_id = packet.id(),
-                         len = packet.body.len(),
-                         "received packet"
-                    );
-                }
-                info!(id = %connection.id, "connection handler finished");
-            });
+            spawn_session(connection);
         })
         .await;
 

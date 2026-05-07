@@ -8,8 +8,8 @@
 
 [server]
 environment = "development"
-port = 3000
-bind_address = "0.0.0.0"
+port = 2096
+bind_address = "127.0.0.1"
 max_connections = 2000
 shutdown_timeout_secs = 30
 

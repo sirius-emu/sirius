@@ -709,6 +709,7 @@ dependencies = [
  "rand 0.10.1",
  "sirius-config",
  "sirius-network",
+ "sirius-session",
  "sirius-tracing",
  "tokio",
  "tracing",
