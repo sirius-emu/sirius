@@ -71,7 +71,8 @@ impl RateLimiter {
 
         match self.inner.buckets.get_mut(&ip) {
             Some(mut bucket) => {
-                if now.duration_since(bucket.window_start) >= self.inner.window {
+                if now.duration_since(bucket.window_start) >= self.inner.window
+                {
                     bucket.count = 1;
                     bucket.window_start = now;
                     true
@@ -95,9 +96,9 @@ impl RateLimiter {
     /// to prevent the map from growing unbounded with stale entries.
     pub fn cleanup(&self) {
         let now = Instant::now();
-        self.inner
-            .buckets
-            .retain(|_, bucket| now.duration_since(bucket.window_start) < self.inner.window * 60);
+        self.inner.buckets.retain(|_, bucket| {
+            now.duration_since(bucket.window_start) < self.inner.window * 60
+        });
     }
 }
 

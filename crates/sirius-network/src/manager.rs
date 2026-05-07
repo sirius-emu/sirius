@@ -73,7 +73,11 @@ impl ConnectionManager {
     ///
     /// Called immediately after a connection is spawned. The `outbound_tx`
     /// is stored so the manager can push packets to the connection later.
-    pub fn register(&self, id: ConnectionId, outbound_tx: mpsc::Sender<RawPacket>) {
+    pub fn register(
+        &self,
+        id: ConnectionId,
+        outbound_tx: mpsc::Sender<RawPacket>,
+    ) {
         self.inner
             .connections
             .insert(id, ConnectionEntry { outbound_tx });
@@ -108,7 +112,10 @@ impl ConnectionManager {
 /// `close_rx` is the receiving end of the channel that connection tasks
 /// send their [`ConnectionId`] to when they exit. Pass the sending end
 /// to each [`Connection::spawn`] call.
-pub fn spawn_cleanup_task(manager: ConnectionManager, mut close_rx: mpsc::Receiver<ConnectionId>) {
+pub fn spawn_cleanup_task(
+    manager: ConnectionManager,
+    mut close_rx: mpsc::Receiver<ConnectionId>,
+) {
     tokio::spawn(async move {
         while let Some(id) = close_rx.recv().await {
             manager.unregister(id);

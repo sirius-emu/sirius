@@ -38,8 +38,9 @@ impl RawPacket {
     /// enforces `MAX_BODY_LEN = 65_535`, so this can only be triggered by
     /// hand-constructed packets with unreasonably large bodies.
     pub fn new(id: u16, body: Bytes) -> Self {
-        let body_len = u32::try_from(body.len())
-            .unwrap_or_else(|_| panic!("RawPacket body too large: {} bytes", body.len()));
+        let body_len = u32::try_from(body.len()).unwrap_or_else(|_| {
+            panic!("RawPacket body too large: {} bytes", body.len())
+        });
         let length = PacketHeader::MIN_LENGTH + body_len;
         Self {
             header: PacketHeader { length, id },

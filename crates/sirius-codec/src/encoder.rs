@@ -27,14 +27,17 @@ impl NitroEncoder {
 impl Encoder<RawPacket> for NitroEncoder {
     type Error = SiriusError;
 
-    fn encode(&mut self, packet: RawPacket, dst: &mut BytesMut) -> Result<(), Self::Error> {
+    fn encode(
+        &mut self,
+        packet: RawPacket,
+        dst: &mut BytesMut,
+    ) -> Result<(), Self::Error> {
         let body_len = packet.body.len();
 
         let length = PacketHeader::MIN_LENGTH
-            .checked_add(
-                u32::try_from(body_len)
-                    .unwrap_or_else(|_| panic!("encoder body length {body_len} overflows u32")),
-            )
+            .checked_add(u32::try_from(body_len).unwrap_or_else(|_| {
+                panic!("encoder body length {body_len} overflows u32")
+            }))
             .ok_or_else(|| {
                 SiriusError::Protocol(ProtocolError::EncodingFailed {
                     header_id: packet.header.id,

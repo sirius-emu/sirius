@@ -30,7 +30,9 @@ impl Session {
     /// Consumes the connection. The session takes ownership of the outbound
     /// sender and spawns a separate task to pump inbound packets into the
     /// session's mailbox.
-    pub fn from_connection(connection: Connection) -> (Self, mpsc::Receiver<RawPacket>) {
+    pub fn from_connection(
+        connection: Connection,
+    ) -> (Self, mpsc::Receiver<RawPacket>) {
         let session = Self {
             id: connection.id,
             peer_addr: connection.peer_addr,
@@ -49,7 +51,10 @@ impl Session {
     }
 
     /// Sends an outgoing packet composer to the client.
-    async fn compose<P: OutgoingPacket>(&self, composer: &P) -> Result<(), SiriusError> {
+    async fn compose<P: OutgoingPacket>(
+        &self,
+        composer: &P,
+    ) -> Result<(), SiriusError> {
         let packet = composer.to_raw()?;
         self.send(packet).await;
         Ok(())
@@ -63,7 +68,9 @@ impl Session {
         let header_id = raw.id();
 
         match header_id {
-            ReleaseVersionPacket::HEADER_ID => self.on_release_version(raw).await,
+            ReleaseVersionPacket::HEADER_ID => {
+                self.on_release_version(raw).await
+            }
             SsoTicketPacket::HEADER_ID => self.on_sso_ticket(raw, ctx).await,
             _ => {
                 // Unknown or not-yet-implemented packet.
@@ -78,7 +85,10 @@ impl Session {
         }
     }
 
-    async fn on_release_version(&mut self, raw: RawPacket) -> Result<(), SiriusError> {
+    async fn on_release_version(
+        &mut self,
+        raw: RawPacket,
+    ) -> Result<(), SiriusError> {
         let packet = ReleaseVersionPacket::from_raw(raw)?;
         info!(
             id = %self.id,
@@ -120,7 +130,10 @@ impl Session {
 impl Actor for Session {
     type Command = SessionCommand;
 
-    async fn on_start(&mut self, _ctx: &ActorContext<Self::Command>) -> Result<(), SiriusError> {
+    async fn on_start(
+        &mut self,
+        _ctx: &ActorContext<Self::Command>,
+    ) -> Result<(), SiriusError> {
         info!(id = %self.id, peer = %self.peer_addr, "session started");
 
         Ok(())
@@ -147,7 +160,9 @@ impl Actor for Session {
             SessionCommand::Close { reason } => {
                 info!(id = %self.id, %reason, "session closing");
                 self.auth_state = AuthState::Closing;
-                return Err(SiriusError::Auth(sirius_error::AuthError::NotAuthenticated));
+                return Err(SiriusError::Auth(
+                    sirius_error::AuthError::NotAuthenticated,
+                ));
             }
 
             _ => {}
@@ -156,7 +171,10 @@ impl Actor for Session {
         Ok(())
     }
 
-    async fn on_stop(&mut self, _ctx: &ActorContext<Self::Command>) -> Result<(), SiriusError> {
+    async fn on_stop(
+        &mut self,
+        _ctx: &ActorContext<Self::Command>,
+    ) -> Result<(), SiriusError> {
         info!(id = %self.id, state = %self.auth_state, "session stopped");
         Ok(())
     }

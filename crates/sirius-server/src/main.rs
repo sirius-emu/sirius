@@ -38,7 +38,8 @@ fn print_sirius_banner() {
       ▄████████▀  █▀     ███    ███ █▀   ████████▀   ▄████████▀
 "#;
 
-    let banner = format!("{}\n      v{} | {}", ascii_art, version, selected_quote);
+    let banner =
+        format!("{}\n      v{} | {}", ascii_art, version, selected_quote);
 
     let start_color = (200.0, 230.0, 255.0);
     let end_color = (0.0, 80.0, 255.0);
@@ -59,7 +60,10 @@ fn print_sirius_banner() {
         let g = (start_color.1 + ratio * (end_color.1 - start_color.1)) as u8;
         let b = (start_color.2 + ratio * (end_color.2 - start_color.2)) as u8;
 
-        colored_banner.push_str(&format!("\x1b[38;2;{};{};{}m{}\x1b[0m\n", r, g, b, line));
+        colored_banner.push_str(&format!(
+            "\x1b[38;2;{};{};{}m{}\x1b[0m\n",
+            r, g, b, line
+        ));
     }
 
     println!("{}", colored_banner);
@@ -72,7 +76,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     sirius_tracing::init(sirius_tracing::TracingConfig::default())?;
     info!("Starting Sirius Emulator");
 
-    let manager = ConnectionManager::new(config.network.rate_limit_per_ip as usize * 100);
+    let manager =
+        ConnectionManager::new(config.network.rate_limit_per_ip as usize * 100);
     let (close_tx, close_rx) = mpsc::channel(1024);
     spawn_cleanup_task(manager.clone(), close_rx);
 
@@ -86,7 +91,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let ip: std::net::IpAddr = config.server.bind_address.parse()?;
     let addr = SocketAddr::new(ip, config.server.port);
-    let listener = Listener::bind(addr, &config.network, manager, close_tx).await?;
+    let listener =
+        Listener::bind(addr, &config.network, manager, close_tx).await?;
 
     print_sirius_banner();
 

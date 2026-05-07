@@ -23,7 +23,7 @@ impl Vec2 {
     pub const ZERO: Self = Self { x: 0, y: 0 };
 
     #[inline]
-    #[must_use] 
+    #[must_use]
     pub const fn new(x: i32, y: i32) -> Self {
         Self { x, y }
     }
@@ -33,20 +33,20 @@ impl Vec2 {
     /// Used by the pathfinder heuristic. Don't use Euclidean distance here,
     /// diagonal moves cost the same as cardinal ones on the Habbo grid.
     #[inline]
-    #[must_use] 
+    #[must_use]
     pub fn manhattan_distance(self, other: Self) -> i32 {
         (self.x - other.x).abs() + (self.y - other.y).abs()
     }
 
     /// Returns true if `other` is within the given tile radius (inclusive).
     #[inline]
-    #[must_use] 
+    #[must_use]
     pub fn within_range(self, other: Self, radius: i32) -> bool {
         self.manhattan_distance(other) <= radius
     }
 
     /// The 8 neighboring positions (cardinal + diagonal).
-    #[must_use] 
+    #[must_use]
     pub fn neighbors(self) -> [Self; 8] {
         [
             Self::new(self.x - 1, self.y - 1),
@@ -97,14 +97,14 @@ impl Vec3 {
     pub const ZERO: Self = Self { x: 0, y: 0, z: 0.0 };
 
     #[inline]
-    #[must_use] 
+    #[must_use]
     pub const fn new(x: i32, y: i32, z: f64) -> Self {
         Self { x, y, z }
     }
 
     /// Drops the Z component.
     #[inline]
-    #[must_use] 
+    #[must_use]
     pub const fn to_vec2(self) -> Vec2 {
         Vec2::new(self.x, self.y)
     }
@@ -149,14 +149,14 @@ pub enum Direction {
 impl Direction {
     /// Rotates 180 degrees. Used when an NPC turns to face a player.
     #[inline]
-    #[must_use] 
+    #[must_use]
     pub fn opposite(self) -> Self {
         Self::from_u8((self as u8 + 4) % 8)
     }
 
     /// Returns the unit vector offset for this direction.
     #[inline]
-    #[must_use] 
+    #[must_use]
     pub fn to_vec2_offset(self) -> Vec2 {
         match self {
             Self::North => Vec2::new(0, -1),
@@ -173,7 +173,7 @@ impl Direction {
     /// Derives the direction from a source position to a target position.
     ///
     /// Returns `None` if source and target are the same tile.
-    #[must_use] 
+    #[must_use]
     pub fn from_positions(from: Vec2, to: Vec2) -> Option<Self> {
         let dx = (to.x - from.x).signum();
         let dy = (to.y - from.y).signum();
@@ -193,7 +193,7 @@ impl Direction {
 
     /// Converts a raw u8 to a `Direction`, wrapping at 8.
     #[inline]
-    #[must_use] 
+    #[must_use]
     pub fn from_u8(v: u8) -> Self {
         match v % 8 {
             0 => Self::North,

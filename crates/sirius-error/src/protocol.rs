@@ -15,7 +15,9 @@ pub enum ProtocolError {
     ///
     /// Either the client sent a malformed packet or there's a mismatch between
     /// the codec and the packet definition.
-    #[error("packet {header_id} is too short: expected at least {expected} bytes, got {got}")]
+    #[error(
+        "packet {header_id} is too short: expected at least {expected} bytes, got {got}"
+    )]
     PacketTooShort {
         header_id: u16,
         expected: usize,
@@ -23,7 +25,9 @@ pub enum ProtocolError {
     },
 
     /// A string field in the packet is not valid UTF-8.
-    #[error("packet {header_id} contains invalid UTF-8 at byte offset {offset}")]
+    #[error(
+        "packet {header_id} contains invalid UTF-8 at byte offset {offset}"
+    )]
     InvalidString { header_id: u16, offset: usize },
 
     /// A field value is outside the range of valid values.
@@ -38,7 +42,9 @@ pub enum ProtocolError {
 
     /// The declared packet length in the header does not match the actual
     /// number of bytes available in the frame.
-    #[error("packet length mismatch: header declares {declared}, frame contains {actual}")]
+    #[error(
+        "packet length mismatch: header declares {declared}, frame contains {actual}"
+    )]
     LengthMismatch { declared: u32, actual: usize },
 
     /// The packet body exceeds the maximum allowed size.
@@ -46,7 +52,9 @@ pub enum ProtocolError {
     /// This is returned by the decoder when the `length` field in the header
     /// indicates a body that would exceed `MAX_BODY_LEN`. The connection
     /// should be closed; well-behaved clients never send packets this large.
-    #[error("packet body too large: {body_len} bytes exceeds maximum of {max} bytes")]
+    #[error(
+        "packet body too large: {body_len} bytes exceeds maximum of {max} bytes"
+    )]
     PacketTooLarge { body_len: usize, max: usize },
 
     /// A packet could not be encoded for sending.

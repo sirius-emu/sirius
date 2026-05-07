@@ -26,8 +26,12 @@ impl WsStream {
     ///
     /// `ping_interval_secs` controls how often a Ping frame is sent to keep
     /// the connection alive.
-    pub fn new(inner: WebSocketStream<TcpStream>, ping_interval_secs: u64) -> Self {
-        let mut ping_interval = time::interval(Duration::from_secs(ping_interval_secs));
+    pub fn new(
+        inner: WebSocketStream<TcpStream>,
+        ping_interval_secs: u64,
+    ) -> Self {
+        let mut ping_interval =
+            time::interval(Duration::from_secs(ping_interval_secs));
         // The first tick fires immediately, we don't want to ping instantly.
         ping_interval.reset();
 
@@ -44,7 +48,10 @@ impl WsStream {
     ///
     /// This method also handles Ping/Pong and Close frames internally. It will
     /// wait up to `timeout` before failing.
-    pub async fn next(&mut self, timeout: Duration) -> Result<Option<RawPacket>, SiriusError> {
+    pub async fn next(
+        &mut self,
+        timeout: Duration,
+    ) -> Result<Option<RawPacket>, SiriusError> {
         loop {
             // If we already have a full packet in the buffer from a previous frame,
             // yield it immediately before reading more.

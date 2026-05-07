@@ -64,7 +64,8 @@ impl Config {
         let raw = RawConfig::builder()
             .add_source(File::new("config/default", FileFormat::Toml))
             .add_source(
-                File::new(&format!("config/{environment}"), FileFormat::Toml).required(false),
+                File::new(&format!("config/{environment}"), FileFormat::Toml)
+                    .required(false),
             )
             .add_source(
                 Environment::with_prefix("SIRIUS")

@@ -2,7 +2,9 @@
 
 use crate::error::TracingError;
 use tracing::Level;
-use tracing_subscriber::{EnvFilter, fmt, layer::SubscriberExt, util::SubscriberInitExt};
+use tracing_subscriber::{
+    EnvFilter, fmt, layer::SubscriberExt, util::SubscriberInitExt,
+};
 
 /// Controls how the tracing subscriber is configured.
 #[derive(Debug, Clone)]
@@ -104,7 +106,10 @@ fn build_filter(config: &TracingConfig) -> Result<EnvFilter, TracingError> {
     })
 }
 
-fn install_pretty(config: TracingConfig, filter: EnvFilter) -> Result<(), TracingError> {
+fn install_pretty(
+    config: TracingConfig,
+    filter: EnvFilter,
+) -> Result<(), TracingError> {
     let fmt_layer = fmt::layer()
         .with_target(config.include_target)
         .with_file(config.include_location)
@@ -124,7 +129,10 @@ fn install_pretty(config: TracingConfig, filter: EnvFilter) -> Result<(), Tracin
     Ok(())
 }
 
-fn install_json(config: TracingConfig, filter: EnvFilter) -> Result<(), TracingError> {
+fn install_json(
+    config: TracingConfig,
+    filter: EnvFilter,
+) -> Result<(), TracingError> {
     let fmt_layer = fmt::layer()
         .json()
         .with_target(config.include_target)

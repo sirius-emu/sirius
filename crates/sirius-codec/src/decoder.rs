@@ -44,7 +44,10 @@ impl Decoder for NitroDecoder {
     type Item = RawPacket;
     type Error = SiriusError;
 
-    fn decode(&mut self, src: &mut BytesMut) -> Result<Option<Self::Item>, Self::Error> {
+    fn decode(
+        &mut self,
+        src: &mut BytesMut,
+    ) -> Result<Option<Self::Item>, Self::Error> {
         let length = if let Some(l) = self.pending_length {
             l
         } else {
