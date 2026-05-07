@@ -9,3 +9,4 @@ sirius-tracing = { path = "../sirius-tracing" }
 sirius-network = { path = "../sirius-network" }
 tokio.workspace = true
 tracing.workspace = true
+rand = "0.10.1"
