@@ -16,11 +16,19 @@ pub enum SessionCommand {
     /// Forcefully closes this session.
     ///
     /// Used for bans, kicks and server shutdown.
-    Close { reason: String },
+    Close {
+        reason: String,
+    },
 
     /// Notifies the session that authentication completed successfully.
-    AuthSuccess { user_id: UserId },
+    AuthSuccess {
+        user_id: UserId,
+    },
 
     /// Notifies the session that authentication failed.
-    AuthFailure { reason: String },
+    AuthFailure {
+        reason: String,
+    },
+
+    SendPing,
 }

@@ -1,6 +1,6 @@
 //! The session actor.
 
-use crate::{AuthState, SessionCommand};
+use crate::{AuthState, SessionCommand, SessionManager};
 use sirius_actor::{Actor, ActorContext};
 use sirius_codec::RawPacket;
 use sirius_error::SiriusError;
@@ -9,9 +9,11 @@ use sirius_packets::incoming::{
     PongPacket, ReleaseVersionPacket, SsoTicketPacket,
 };
 use sirius_packets::outgoing::AuthOkComposer;
-use sirius_packets::{IncomingPacket, OutgoingPacket};
+use sirius_packets::outgoing::handshake::{PingComposer, PongComposer};
+use sirius_packets::{IncomingPacket, OutgoingPacket, PingPacket};
 use sirius_types::UserId;
 use std::net::SocketAddr;
+use std::time::Instant;
 use tokio::sync::mpsc;
 use tracing::{debug, info, warn};
 
@@ -25,6 +27,8 @@ pub struct Session {
     pub peer_addr: SocketAddr,
     pub auth_state: AuthState,
     outbound_tx: mpsc::Sender<RawPacket>,
+    last_ping_at: Option<Instant>,
+    manager: SessionManager,
 }
 
 impl Session {
@@ -35,22 +39,26 @@ impl Session {
     /// session's mailbox.
     pub fn from_connection(
         connection: Connection,
+        manager: SessionManager,
     ) -> (Self, mpsc::Receiver<RawPacket>) {
         let session = Self {
             id: connection.id,
             peer_addr: connection.peer_addr,
             auth_state: AuthState::Unauthenticated,
             outbound_tx: connection.outbound_tx,
+            last_ping_at: None,
+            manager,
         };
 
         (session, connection.inbound_rx)
     }
 
     /// Sends a packet to the client.
-    async fn send(&self, packet: RawPacket) {
-        if self.outbound_tx.send(packet).await.is_err() {
+    async fn send(&self, packet: RawPacket) -> Result<(), SiriusError> {
+        self.outbound_tx.send(packet).await.map_err(|_| {
             warn!(id = %self.id, "outbound channel closed while sending packet");
-        }
+            SiriusError::Network(sirius_error::NetworkError::ConnectionClosed)
+        })
     }
 
     /// Sends an outgoing packet composer to the client.
@@ -59,7 +67,7 @@ impl Session {
         composer: &P,
     ) -> Result<(), SiriusError> {
         let packet = composer.to_raw()?;
-        self.send(packet).await;
+        self.send(packet).await?;
         Ok(())
     }
 
@@ -74,7 +82,8 @@ impl Session {
             ReleaseVersionPacket::HEADER_ID => {
                 self.on_release_version(raw).await
             }
-            PongPacket::HEADER_ID => self.on_pong(raw).await,
+            PongPacket::HEADER_ID => self.on_pong().await,
+            PingPacket::HEADER_ID => self.on_ping(raw).await,
             SsoTicketPacket::HEADER_ID => self.on_sso_ticket(raw, ctx).await,
             _ => {
                 // Unknown or not-yet-implemented packet.
@@ -103,9 +112,32 @@ impl Session {
         Ok(())
     }
 
-    async fn on_pong(&mut self, raw: RawPacket) -> Result<(), SiriusError> {
+    async fn on_pong(&mut self) -> Result<(), SiriusError> {
         debug!(id = %self.id, "pong received");
+        self.last_ping_at = None;
         Ok(())
+    }
+
+    async fn on_ping(&mut self, raw: RawPacket) -> Result<(), SiriusError> {
+        let packet = PingPacket::from_raw(raw)?;
+
+        debug!(id = %self.id, ping_id = packet.id, "ping received, sending pong");
+        self.compose(&PongComposer::new(packet.id)).await
+    }
+
+    async fn on_send_ping(&mut self) -> Result<(), SiriusError> {
+        self.compose(&PingComposer).await?;
+        self.last_ping_at = Some(Instant::now());
+        debug!(id = %self.id, "ping sent");
+        Ok(())
+    }
+
+    fn check_ping_timeout(&self) -> bool {
+        if let Some(sent_at) = self.last_ping_at {
+            sent_at.elapsed() > std::time::Duration::from_secs(60)
+        } else {
+            false
+        }
     }
 
     async fn on_sso_ticket(
@@ -138,6 +170,7 @@ impl Session {
     async fn on_auth_success(
         &mut self,
         user_id: UserId,
+        ctx: &ActorContext<SessionCommand>,
     ) -> Result<(), SiriusError> {
         self.auth_state = AuthState::Authenticated(user_id);
 
@@ -147,6 +180,8 @@ impl Session {
             peer = %self.peer_addr,
             "session authenticated"
         );
+
+        self.manager.register(user_id, ctx.handle().clone());
 
         self.compose(&AuthOkComposer).await?;
 
@@ -168,9 +203,23 @@ impl Actor for Session {
 
     async fn on_start(
         &mut self,
-        _ctx: &ActorContext<Self::Command>,
+        ctx: &ActorContext<Self::Command>,
     ) -> Result<(), SiriusError> {
         info!(id = %self.id, peer = %self.peer_addr, "session started");
+
+        let handle = ctx.handle().clone();
+        tokio::spawn(async move {
+            let mut interval =
+                tokio::time::interval(std::time::Duration::from_secs(30));
+
+            interval.tick().await;
+            loop {
+                interval.tick().await;
+                if handle.send(SessionCommand::SendPing).await.is_err() {
+                    break;
+                }
+            }
+        });
 
         Ok(())
     }
@@ -188,25 +237,31 @@ impl Actor for Session {
             SessionCommand::InboundPacket(packet) => {
                 self.handle_inbound(packet, ctx).await?;
             }
-
             SessionCommand::SendPacket(packet) => {
                 self.send(packet).await;
             }
-
             SessionCommand::AuthSuccess { user_id } => {
-                self.on_auth_success(user_id).await?;
+                self.on_auth_success(user_id, ctx).await?;
             }
-
             SessionCommand::AuthFailure { reason } => {
                 self.on_auth_failure(&reason).await?;
             }
-
             SessionCommand::Close { reason } => {
                 info!(id = %self.id, %reason, "session closing");
                 self.auth_state = AuthState::Closing;
                 return Err(SiriusError::Auth(
                     sirius_error::AuthError::NotAuthenticated,
                 ));
+            }
+            SessionCommand::SendPing => {
+                if self.check_ping_timeout() {
+                    warn!(id = %self.id, "ping timeout, closing session");
+                    self.auth_state = AuthState::Closing;
+                    return Err(SiriusError::Auth(
+                        sirius_error::AuthError::NotAuthenticated,
+                    ));
+                }
+                self.on_send_ping().await?;
             }
         }
 
@@ -217,6 +272,10 @@ impl Actor for Session {
         &mut self,
         _ctx: &ActorContext<Self::Command>,
     ) -> Result<(), SiriusError> {
+        if let Some(user_id) = self.auth_state.user_id() {
+            self.manager.unregister(user_id);
+        }
+
         info!(id = %self.id, state = %self.auth_state, "session stopped");
         Ok(())
     }
@@ -229,8 +288,12 @@ impl Actor for Session {
 /// 2. Spawns the actor (which starts the `on_start` hook and message loop).
 /// 3. Spawns a pump task that reads from `inbound_rx` and forwards each packet
 ///    as a [`SessionCommand::InboundPacket`].
-pub fn spawn_session(connection: Connection) -> crate::SessionHandle {
-    let (session, mut inbound_rx) = Session::from_connection(connection);
+pub fn spawn_session(
+    connection: Connection,
+    manager: SessionManager,
+) -> crate::SessionHandle {
+    let (session, mut inbound_rx) =
+        Session::from_connection(connection, manager);
     let handle = session.spawn(256);
     let pump_handle = handle.clone();
 

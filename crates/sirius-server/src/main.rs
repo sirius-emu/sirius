@@ -3,7 +3,7 @@
 use rand::seq::IndexedRandom;
 use sirius_config::Config;
 use sirius_network::{ConnectionManager, Listener, spawn_cleanup_task};
-use sirius_session::spawn_session;
+use sirius_session::{SessionManager, spawn_session};
 use std::net::SocketAddr;
 use tokio::sync::{mpsc, watch};
 use tracing::info;
@@ -96,9 +96,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     print_sirius_banner();
 
+    let session_manager = SessionManager::new();
+
     listener
-        .run(shutdown_rx, |connection| async move {
-            spawn_session(connection);
+        .run(shutdown_rx, move |connection| {
+            let session_manager = session_manager.clone();
+            async move {
+                spawn_session(connection, session_manager);
+            }
         })
         .await;
 
