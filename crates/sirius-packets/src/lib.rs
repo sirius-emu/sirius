@@ -28,9 +28,12 @@
 //!
 //! [`RawPacket`]: sirius_codec::RawPacket
 
+pub mod incoming;
+pub mod outgoing;
 pub mod reader;
 pub mod writer;
 
+pub use incoming::ReleaseVersionEvent;
 pub use reader::PacketReader;
 pub use writer::PacketWriter;
 
