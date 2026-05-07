@@ -3,6 +3,13 @@
 use crate::ConfigError;
 use serde::Deserialize;
 
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+#[serde(rename_all(deserialize = "lowercase"))]
+pub enum TracingFormat {
+    Pretty,
+    Json,
+}
+
 /// Controls how the tracing subscriber is configured.
 #[derive(Debug, Deserialize)]
 pub struct TracingConfig {
@@ -10,9 +17,7 @@ pub struct TracingConfig {
     pub default_level: String,
 
     /// Output format.
-    ///
-    /// Default: "pretty" in development, "json" in production.
-    pub format: String,
+    pub format: TracingFormat,
 
     /// Whether to include the source file and line number in log output.
     ///
@@ -52,16 +57,6 @@ impl TracingConfig {
                 field: "tracing.service_name",
                 reason: "service_name cannot be empty".into(),
             });
-        }
-
-        match self.format.as_str() {
-            "pretty" | "json" => {}
-            _ => {
-                return Err(ConfigError::InvalidValue {
-                    field: "tracing.format",
-                    reason: "must be either 'pretty' or 'json'".into(),
-                });
-            }
         }
 
         Ok(())

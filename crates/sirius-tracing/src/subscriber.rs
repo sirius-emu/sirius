@@ -1,8 +1,7 @@
 //! Subscriber construction and installation.
 
 use crate::error::TracingError;
-use sirius_config::TracingConfig;
-use tracing::Level;
+use sirius_config::{TracingConfig, TracingFormat};
 use tracing_subscriber::{
     EnvFilter, fmt, layer::SubscriberExt, util::SubscriberInitExt,
 };
@@ -22,18 +21,10 @@ pub(crate) fn install(config: &TracingConfig) -> Result<(), TracingError> {
             .map_err(|e| TracingError::InvalidFilter(e.to_string()))
     })?;
 
-    match config.format.as_str() {
-        "pretty" => install_pretty(config, filter),
-        "json" => install_json(config, filter),
-        other => Err(TracingError::InvalidFormat(other.to_string())),
+    match config.format {
+        TracingFormat::Pretty => install_pretty(config, filter),
+        TracingFormat::Json => install_json(config, filter),
     }
-}
-
-fn build_filter(config: &TracingConfig) -> Result<EnvFilter, TracingError> {
-    EnvFilter::try_from_default_env().or_else(|_| {
-        EnvFilter::try_new(config.default_level.as_str())
-            .map_err(|e| TracingError::InvalidFilter(e.to_string()))
-    })
 }
 
 fn install_pretty(

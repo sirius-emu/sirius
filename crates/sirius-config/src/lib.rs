@@ -40,7 +40,7 @@ pub use database::DatabaseConfig;
 pub use error::ConfigError;
 pub use network::NetworkConfig;
 pub use server::ServerConfig;
-pub use tracing::TracingConfig;
+pub use tracing::{TracingConfig, TracingFormat};
 
 use config::{Config as RawConfig, Environment, File, FileFormat};
 use serde::Deserialize;
