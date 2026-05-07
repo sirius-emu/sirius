@@ -18,16 +18,34 @@ use sirius_error::SiriusError;
 /// ```text
 /// [u16 len][utf-8 bytes]   ← release version string
 /// ```
-pub struct ReleaseVersionEvent {
+pub struct ReleaseVersionPacket {
     /// The client's self-reported release version string.
     pub release_version: String,
 }
 
-impl IncomingPacket for ReleaseVersionEvent {
+impl IncomingPacket for ReleaseVersionPacket {
     const HEADER_ID: u16 = 4000;
 
     fn parse(reader: &mut PacketReader) -> Result<Self, SiriusError> {
         let release_version = reader.read_string()?;
         Ok(Self { release_version })
+    }
+}
+
+/// Carries the SSO authentication ticket issued by the hotel website.
+///
+/// After parsing, pass the `ticket` field to the auth subsystem for validation
+#[derive(Debug, Clone)]
+pub struct SsoTicketPacket {
+    /// The raw SSO ticket string.
+    pub ticket: String,
+}
+
+impl IncomingPacket for SsoTicketPacket {
+    const HEADER_ID: u16 = 2419;
+
+    fn parse(reader: &mut PacketReader) -> Result<Self, SiriusError> {
+        let ticket = reader.read_string()?;
+        Ok(Self { ticket })
     }
 }

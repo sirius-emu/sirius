@@ -91,7 +91,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     print_sirius_banner();
 
     listener
-        .run(shutdown_rx, |mut connection| async move {
+        .run(shutdown_rx, |connection| async move {
             spawn_session(connection);
         })
         .await;

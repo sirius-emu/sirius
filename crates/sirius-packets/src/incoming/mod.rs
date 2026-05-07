@@ -6,5 +6,4 @@
 
 pub mod handshake;
 
-pub use handshake::ReleaseVersionEvent;
-
+pub use handshake::{ReleaseVersionPacket, SsoTicketPacket};

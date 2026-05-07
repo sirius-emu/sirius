@@ -5,8 +5,9 @@ use sirius_actor::{Actor, ActorContext};
 use sirius_codec::RawPacket;
 use sirius_error::SiriusError;
 use sirius_network::{Connection, ConnectionId};
-use sirius_packets::IncomingPacket;
-use sirius_packets::{OutgoingPacket, ReleaseVersionEvent};
+use sirius_packets::incoming::{ReleaseVersionPacket, SsoTicketPacket};
+use sirius_packets::{IncomingPacket, OutgoingPacket};
+use sirius_types::UserId;
 use std::net::SocketAddr;
 use tokio::sync::mpsc;
 use tracing::{debug, info, warn};
@@ -57,12 +58,13 @@ impl Session {
     async fn handle_inbound(
         &mut self,
         raw: RawPacket,
-        _ctx: &ActorContext<SessionCommand>,
+        ctx: &ActorContext<SessionCommand>,
     ) -> Result<(), SiriusError> {
         let header_id = raw.id();
 
         match header_id {
-            ReleaseVersionEvent::HEADER_ID => self.on_release_version(raw).await,
+            ReleaseVersionPacket::HEADER_ID => self.on_release_version(raw).await,
+            SsoTicketPacket::HEADER_ID => self.on_sso_ticket(raw, ctx).await,
             _ => {
                 // Unknown or not-yet-implemented packet.
                 debug!(
@@ -77,12 +79,39 @@ impl Session {
     }
 
     async fn on_release_version(&mut self, raw: RawPacket) -> Result<(), SiriusError> {
-        let packet = ReleaseVersionEvent::from_raw(raw)?;
+        let packet = ReleaseVersionPacket::from_raw(raw)?;
         info!(
             id = %self.id,
             release = %packet.release_version,
             "client release version"
         );
+
+        Ok(())
+    }
+
+    async fn on_sso_ticket(
+        &mut self,
+        raw: RawPacket,
+        ctx: &ActorContext<SessionCommand>,
+    ) -> Result<(), SiriusError> {
+        if !matches!(self.auth_state, AuthState::Unauthenticated) {
+            warn!(id = %self.id, "received SsoTicket in wrong state, ignoring");
+            return Ok(());
+        }
+
+        let packet = SsoTicketPacket::from_raw(raw)?;
+
+        debug!(id = %self.id, ticket = %packet.ticket, "received SSO ticket, validating");
+
+        self.auth_state = AuthState::Authenticating;
+
+        let stub_user_id = UserId::from(packet.ticket.len() as i64);
+
+        ctx.handle()
+            .send(SessionCommand::AuthSuccess {
+                user_id: stub_user_id,
+            })
+            .await?;
 
         Ok(())
     }
