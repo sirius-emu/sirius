@@ -4,15 +4,7 @@ use crate::prelude::*;
 ///
 /// The client announces its release version string. The server does not need
 /// to validate or act on this value, it is informational only.
-///
-/// Header ID: `4000`
-///
-/// Wire format:
-/// ```text
-/// [u16 len][utf-8 bytes]   ← release version string
-/// ```
 pub struct ReleaseVersionPacket {
-    /// The client's self-reported release version string.
     pub release_version: String,
 }
 

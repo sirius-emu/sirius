@@ -11,13 +11,13 @@ impl OutgoingPacket for PingComposer {
     }
 }
 
-/// Sent in response to a client-initiated `PingEvent` (295).
+/// Sent in response to a client-initiated `PingPacket` (295).
 ///
-/// The client sends a `PingEvent` with an `i32` value; the server echoes
+/// The client sends a `PingPacket` with an `i32` value; the server echoes
 /// that same value back in this composer.
 #[derive(Debug, Clone)]
 pub struct PongComposer {
-    /// The value received in the client's `PingEvent`. Echoed back as-is.
+    /// The value received in the client's `PingPacket`. Echoed back as-is.
     pub id: i32,
 }
 

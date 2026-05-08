@@ -132,7 +132,11 @@ impl Session {
 
     async fn on_send_ping(&mut self) -> Result<(), SiriusError> {
         self.compose(&PingComposer).await?;
-        self.last_ping_at = Some(Instant::now());
+
+        if self.last_ping_at.is_none() {
+            self.last_ping_at = Some(Instant::now());
+        }
+
         debug!(id = %self.id, "ping sent");
         Ok(())
     }
