@@ -1,14 +1,18 @@
 //! Main entry point for the Sirius Emulator.
 
 mod banner;
+mod context;
 
 use sirius_config::Config;
 use sirius_database::Database;
 use sirius_network::{ConnectionManager, Listener, spawn_cleanup_task};
+use sirius_repository::Repository;
 use sirius_session::{SessionManager, spawn_session};
-use std::net::SocketAddr;
+use std::{net::SocketAddr, sync::Arc};
 use tokio::sync::{mpsc, watch};
 use tracing::info;
+
+use crate::context::ServerContext;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -27,15 +31,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             std::process::exit(1);
         }
     };
+    let shared_config = Arc::new(config);
 
-    if let Err(e) = sirius_tracing::init(&config.tracing) {
+    if let Err(e) = sirius_tracing::init(&shared_config.tracing) {
         eprintln!("Tracing initialization error: {}", e);
         std::process::exit(1);
     }
 
     info!("Starting Sirius");
 
-    let db = Database::connect(&config.database).await?;
+    let db = Database::connect(&shared_config.database).await?;
 
     info!(
         size = db.stats().size,
@@ -43,8 +48,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         "database connected"
     );
 
-    let manager =
-        ConnectionManager::new(config.network.rate_limit_per_ip as usize * 100);
+    let repository = Repository::new(&db);
+
+    let context = ServerContext {
+        sessions: SessionManager::new(),
+        repository,
+    };
+
+    let manager = ConnectionManager::new(
+        shared_config.network.rate_limit_per_ip as usize * 100,
+    );
     let (close_tx, close_rx) = mpsc::channel(1024);
     spawn_cleanup_task(manager.clone(), close_rx);
 
@@ -56,20 +69,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let _ = shutdown_tx.send(true);
     });
 
-    let ip: std::net::IpAddr = config.server.bind_address.parse()?;
-    let addr = SocketAddr::new(ip, config.server.port);
+    let ip: std::net::IpAddr = shared_config.server.bind_address.parse()?;
+    let addr = SocketAddr::new(ip, shared_config.server.port);
+
     let listener =
-        Listener::bind(addr, &config.network, manager, close_tx).await?;
+        Listener::bind(addr, &shared_config.network, manager, close_tx).await?;
 
-    banner::print_sirius_banner(config.server.environment);
-
-    let session_manager = SessionManager::new();
+    banner::print_sirius_banner(&shared_config.server.environment);
 
     listener
         .run(shutdown_rx, move |connection| {
-            let session_manager = session_manager.clone();
+            let ctx = context.clone();
+
             async move {
-                spawn_session(connection, session_manager);
+                spawn_session(connection, ctx.sessions, ctx.repository);
             }
         })
         .await;

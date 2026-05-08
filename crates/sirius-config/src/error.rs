@@ -2,7 +2,7 @@
 
 use thiserror::Error;
 
-#[derive(Debug, Error)]
+#[derive(Debug, Error, Clone)]
 pub enum ConfigError {
     /// A config file could not be read or parsed.
     #[error("failed to load configuration: {0}")]

@@ -45,4 +45,7 @@ pub enum AuthError {
     /// (kick old session vs. reject new one) is determined by configuration.
     #[error("account is already connected")]
     AlreadyConnected,
+
+    #[error("an internal error occurred")]
+    InternalError,
 }

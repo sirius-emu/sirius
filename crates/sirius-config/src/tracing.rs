@@ -26,7 +26,7 @@ impl<'de> Deserialize<'de> for TracingFormat {
 }
 
 /// Controls how the tracing subscriber is configured.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct TracingConfig {
     /// The minimum log level when `RUST_LOG` is not set.
     pub default_level: String,

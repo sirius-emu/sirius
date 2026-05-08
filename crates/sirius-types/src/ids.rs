@@ -19,7 +19,7 @@ macro_rules! define_id {
         $(#[$attr])*
         #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
         #[serde(transparent)]
-        pub struct $name(i64);
+        pub struct $name(pub i64);
 
         impl $name {
             #[inline]

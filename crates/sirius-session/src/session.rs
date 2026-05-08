@@ -11,7 +11,8 @@ use sirius_packets::incoming::{
 use sirius_packets::outgoing::AuthOkComposer;
 use sirius_packets::outgoing::handshake::{PingComposer, PongComposer};
 use sirius_packets::{IncomingPacket, OutgoingPacket, PingPacket};
-use sirius_types::UserId;
+use sirius_repository::Repository;
+use sirius_repository::models::User;
 use std::net::SocketAddr;
 use std::time::Instant;
 use tokio::sync::mpsc;
@@ -29,6 +30,7 @@ pub struct Session {
     outbound_tx: mpsc::Sender<RawPacket>,
     last_ping_at: Option<Instant>,
     manager: SessionManager,
+    repo: Repository,
 }
 
 impl Session {
@@ -40,6 +42,7 @@ impl Session {
     pub fn from_connection(
         connection: Connection,
         manager: SessionManager,
+        repo: Repository,
     ) -> (Self, mpsc::Receiver<RawPacket>) {
         let session = Self {
             id: connection.id,
@@ -48,6 +51,7 @@ impl Session {
             outbound_tx: connection.outbound_tx,
             last_ping_at: None,
             manager,
+            repo,
         };
 
         (session, connection.inbound_rx)
@@ -151,32 +155,45 @@ impl Session {
         }
 
         let packet = SsoTicketPacket::from_raw(raw)?;
-
         debug!(id = %self.id, ticket = %packet.ticket, "received SSO ticket, validating");
 
         self.auth_state = AuthState::Authenticating;
 
-        let stub_user_id = UserId::from(packet.ticket.len() as i64);
+        let handle = ctx.handle().clone();
+        let repo = self.repo.clone();
+        let ticket = packet.ticket;
 
-        ctx.handle()
-            .send(SessionCommand::AuthSuccess {
-                user_id: stub_user_id,
-            })
-            .await?;
+        tokio::spawn(async move {
+            match sirius_handshake::authenticate(ticket, &repo).await {
+                Ok(user) => {
+                    let _ =
+                        handle.send(SessionCommand::AuthSuccess { user }).await;
+                }
+                Err(e) => {
+                    let _ = handle
+                        .send(SessionCommand::AuthFailure {
+                            reason: e.to_string(),
+                        })
+                        .await;
+                }
+            }
+        });
 
         Ok(())
     }
 
     async fn on_auth_success(
         &mut self,
-        user_id: UserId,
+        user: User,
         ctx: &ActorContext<SessionCommand>,
     ) -> Result<(), SiriusError> {
+        let user_id = user.id;
         self.auth_state = AuthState::Authenticated(user_id);
 
         info!(
             id = %self.id,
             %user_id,
+            username = %user.username,
             peer = %self.peer_addr,
             "session authenticated"
         );
@@ -240,8 +257,8 @@ impl Actor for Session {
             SessionCommand::SendPacket(packet) => {
                 self.send(packet).await?;
             }
-            SessionCommand::AuthSuccess { user_id } => {
-                self.on_auth_success(user_id, ctx).await?;
+            SessionCommand::AuthSuccess { user } => {
+                self.on_auth_success(user, ctx).await?;
             }
             SessionCommand::AuthFailure { reason } => {
                 self.on_auth_failure(&reason).await?;
@@ -291,9 +308,10 @@ impl Actor for Session {
 pub fn spawn_session(
     connection: Connection,
     manager: SessionManager,
+    repo: Repository,
 ) -> crate::SessionHandle {
     let (session, mut inbound_rx) =
-        Session::from_connection(connection, manager);
+        Session::from_connection(connection, manager, repo);
     let handle = session.spawn(256);
     let pump_handle = handle.clone();
 

@@ -1,15 +1,15 @@
 [package]
-name = "sirius-server"
+name = "sirius-repository"
 version.workspace = true
 edition.workspace = true
 
 [dependencies]
+sirius-error.workspace = true
 sirius-config.workspace = true
-sirius-tracing.workspace = true
-sirius-network.workspace = true
-sirius-session.workspace = true
-sirius-repository.workspace = true
+sirius-types.workspace = true
 sirius-database.workspace = true
+sqlx.workspace = true
 tokio.workspace = true
 tracing.workspace = true
-rand = "0.10.1"
+thiserror.workspace = true
+chrono = "0.4.44"

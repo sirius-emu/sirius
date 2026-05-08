@@ -3,7 +3,7 @@
 use crate::ConfigError;
 use serde::Deserialize;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct DatabaseConfig {
     /// Full PostgreSQL connection url.
     ///

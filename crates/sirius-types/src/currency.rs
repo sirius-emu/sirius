@@ -63,6 +63,23 @@ impl fmt::Display for Currency {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum CurrencyType {
+    Pixels,
+    Diamonds,
+    Seasonal(i32),
+}
+
+impl From<i32> for CurrencyType {
+    fn from(val: i32) -> Self {
+        match val {
+            0 => Self::Pixels,
+            5 => Self::Diamonds,
+            other => Self::Seasonal(other),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

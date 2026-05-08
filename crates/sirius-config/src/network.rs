@@ -3,7 +3,7 @@
 use crate::error::ConfigError;
 use serde::Deserialize;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct NetworkConfig {
     /// How many seconds without data from a client before the connection is
     /// considered idle and closed.

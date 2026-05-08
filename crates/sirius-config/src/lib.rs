@@ -50,7 +50,7 @@ use serde::Deserialize;
 /// All fields are required unless explicitly marked optional. The server
 /// will not start if any required field is missing after all layers are
 /// merged and environment variables are applied.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct Config {
     pub server: ServerConfig,
     pub network: NetworkConfig,

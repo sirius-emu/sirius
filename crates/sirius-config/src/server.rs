@@ -3,7 +3,7 @@
 use crate::ConfigError;
 use serde::Deserialize;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct ServerConfig {
     /// The environment name. Used for logging and metrics labels.
     pub environment: String,

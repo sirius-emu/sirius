@@ -3,7 +3,7 @@
 //! All interaction with a running session goes through one of those variants.
 
 use sirius_codec::RawPacket;
-use sirius_types::UserId;
+use sirius_repository::models::User;
 
 #[derive(Debug)]
 pub enum SessionCommand {
@@ -22,7 +22,7 @@ pub enum SessionCommand {
 
     /// Notifies the session that authentication completed successfully.
     AuthSuccess {
-        user_id: UserId,
+        user: User,
     },
 
     /// Notifies the session that authentication failed.

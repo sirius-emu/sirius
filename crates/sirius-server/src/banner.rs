@@ -1,6 +1,6 @@
 use rand::seq::IndexedRandom;
 
-pub fn print_sirius_banner(env: String) {
+pub fn print_sirius_banner(env: &str) {
     let ascii_art = r#"
         ▄████████  ▄█     ▄████████  ▄█  ███    █▄     ▄████████
        ███    ███ ███    ███    ███ ███  ███    ███   ███    ███
@@ -67,7 +67,7 @@ pub fn print_sirius_banner(env: String) {
 
     if env == "development" {
         println!(
-            "\x1b[1;33m      WARNING:\x1b[0m Running in DEVELOPMENT mode. Do not use in production!\n"
+            "\x1b[1;33m      WARNING:\x1b[0m\x1b[1m Running in DEVELOPMENT mode. Do not use in production!\x1b[0m\n"
         );
     }
 }

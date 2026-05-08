@@ -15,4 +15,13 @@ pub enum DatabaseError {
 
     #[error("health check failed: {reason}")]
     HealthCheckFailed { reason: String },
+
+    #[error("query failed: {reason}")]
+    QueryFailed { reason: String },
+
+    #[error("record not found: {entity}")]
+    NotFound { entity: &'static str },
+
+    #[error("unique constraint violation: {field} already exists")]
+    UniqueViolation { field: String },
 }

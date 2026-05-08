@@ -6,14 +6,7 @@ edition.workspace = true
 [dependencies]
 sirius-error.workspace = true
 sirius-config.workspace = true
-sqlx = { version = "0.8.6", features = [
-    "postgres",
-    "runtime-tokio",
-    "macros",
-    "migrate",
-    "uuid",
-    "chrono",
-] }
+sqlx.workspace = true
 tokio.workspace = true
 tracing.workspace = true
 thiserror.workspace = true

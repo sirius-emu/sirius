@@ -1,0 +1,8 @@
+[package]
+name = "sirius-handshake"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+sirius-error.workspace = true
+sirius-repository.workspace = true

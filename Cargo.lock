@@ -129,7 +129,9 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c673075a2e0e5f4a1dde27ce9dee1ea4558c7ffe648f576438a20ca1d2acc4b0"
 dependencies = [
  "iana-time-zone",
+ "js-sys",
  "num-traits",
+ "wasm-bindgen",
  "windows-link",
 ]
 
@@ -1382,6 +1384,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "sirius-handshake"
+version = "0.1.0"
+dependencies = [
+ "sirius-error",
+ "sirius-repository",
+]
+
+[[package]]
 name = "sirius-network"
 version = "0.1.0"
 dependencies = [
@@ -1411,6 +1421,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "sirius-repository"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "sirius-config",
+ "sirius-database",
+ "sirius-error",
+ "sirius-types",
+ "sqlx",
+ "thiserror",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
 name = "sirius-server"
 version = "0.1.0"
 dependencies = [
@@ -1418,6 +1443,7 @@ dependencies = [
  "sirius-config",
  "sirius-database",
  "sirius-network",
+ "sirius-repository",
  "sirius-session",
  "sirius-tracing",
  "tokio",
@@ -1432,8 +1458,10 @@ dependencies = [
  "sirius-actor",
  "sirius-codec",
  "sirius-error",
+ "sirius-handshake",
  "sirius-network",
  "sirius-packets",
+ "sirius-repository",
  "sirius-types",
  "tokio",
  "tracing",
@@ -1816,9 +1844,9 @@ checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
 
 [[package]]
 name = "tokio"
-version = "1.52.2"
+version = "1.52.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "110a78583f19d5cdb2c5ccf321d1290344e71313c6c37d43520d386027d18386"
+checksum = "8fc7f01b389ac15039e4dc9531aa973a135d7a4135281b12d7c1bc79fd57fffe"
 dependencies = [
  "bytes",
  "libc",
