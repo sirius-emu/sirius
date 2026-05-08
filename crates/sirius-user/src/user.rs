@@ -3,11 +3,11 @@
 use sirius_actor::{Actor, ActorContext};
 use sirius_codec::RawPacket;
 use sirius_error::{AuthError, SiriusError};
-use sirius_packets::OutgoingPacket;
 use sirius_packets::outgoing::handshake::UserInfoComposer;
+use sirius_packets::{OutgoingPacket, outgoing::user::UserCreditsComposer};
 use sirius_repository::models::User;
 use tokio::sync::mpsc;
-use tracing::{debug, info, warn};
+use tracing::{info, warn};
 
 use crate::UserCommand;
 
@@ -36,9 +36,15 @@ impl UserActor {
     }
 
     async fn on_get_user_info(&self) -> Result<(), SiriusError> {
-        debug!("user info!!");
         self.compose(&UserInfoComposer::new(self.user.clone()))
             .await
+    }
+
+    pub async fn on_send_initial_data(&self) -> Result<(), SiriusError> {
+        self.compose(&UserCreditsComposer::new(self.user.credits))
+            .await?;
+
+        Ok(())
     }
 }
 
@@ -61,6 +67,7 @@ impl Actor for UserActor {
     ) -> Result<(), SiriusError> {
         match cmd {
             UserCommand::GetUserInfo => self.on_get_user_info().await?,
+            UserCommand::SendInitialData => self.on_send_initial_data().await?,
             UserCommand::Disconnect => {
                 return Err(SiriusError::Auth(AuthError::NotAuthenticated));
             }

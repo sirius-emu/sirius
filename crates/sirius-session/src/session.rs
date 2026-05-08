@@ -218,6 +218,8 @@ impl Session {
         self.manager.register(user_id, ctx.handle().clone());
         self.auth_state = AuthState::Authenticated(user_id);
 
+        handle.send(UserCommand::SendInitialData).await?;
+
         self.compose(&AuthenticatedComposer).await?;
         self.compose(&AvailabilityStatusComposer::new(false, false, false))
             .await?;

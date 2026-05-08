@@ -1510,8 +1510,6 @@ version = "0.1.0"
 dependencies = [
  "sirius-actor",
  "sirius-codec",
- "sirius-currency",
- "sirius-database",
  "sirius-error",
  "sirius-packets",
  "sirius-repository",

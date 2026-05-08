@@ -4,3 +4,4 @@
 
 pub mod availability;
 pub mod handshake;
+pub mod user;
