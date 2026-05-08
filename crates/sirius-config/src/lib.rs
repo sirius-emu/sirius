@@ -75,6 +75,7 @@ impl Config {
             )
             .add_source(
                 Environment::with_prefix("SIRIUS")
+                    .prefix_separator("_")
                     .separator("__")
                     .try_parsing(true),
             )
