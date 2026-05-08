@@ -5,6 +5,7 @@ use sirius_actor::{Actor, ActorContext};
 use sirius_codec::RawPacket;
 use sirius_error::SiriusError;
 use sirius_network::{Connection, ConnectionId};
+use sirius_packets::user::UserCurrencyPacket;
 use sirius_packets::{IncomingPacket, OutgoingPacket};
 use sirius_repository::Repository;
 use sirius_repository::models::User;
@@ -94,6 +95,12 @@ impl Session {
             PongPacket::HEADER_ID => self.on_pong().await,
             PingPacket::HEADER_ID => self.on_ping(raw).await,
             SsoTicketPacket::HEADER_ID => self.on_sso_ticket(raw, ctx).await,
+            UserCurrencyPacket::HEADER_ID => {
+                if let Some(h) = &self.user_handle {
+                    h.send(UserCommand::GetCurrency).await?;
+                }
+                Ok(())
+            }
             InfoRetrievePacket::HEADER_ID => {
                 if let Some(h) = &self.user_handle {
                     h.send(UserCommand::GetUserInfo).await?;

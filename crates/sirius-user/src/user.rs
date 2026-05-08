@@ -2,12 +2,17 @@
 
 use sirius_actor::{Actor, ActorContext};
 use sirius_codec::RawPacket;
-use sirius_error::{AuthError, SiriusError};
-use sirius_packets::outgoing::handshake::UserInfoComposer;
-use sirius_packets::{OutgoingPacket, outgoing::user::UserCreditsComposer};
+use sirius_error::SiriusError;
+use sirius_packets::OutgoingPacket;
 use sirius_repository::models::User;
+use sirius_types::CurrencyType;
 use tokio::sync::mpsc;
 use tracing::{info, warn};
+
+use sirius_packets::outgoing::{
+    handshake::UserInfoComposer,
+    user::{UserCreditsComposer, UserCurrencyComposer},
+};
 
 use crate::UserCommand;
 
@@ -46,6 +51,25 @@ impl UserActor {
 
         Ok(())
     }
+
+    async fn on_get_currency(&self) -> Result<(), SiriusError> {
+        let pixels = self
+            .user
+            .currencies
+            .get(&CurrencyType::Pixels)
+            .copied()
+            .unwrap_or(0);
+
+        let diamonds = self
+            .user
+            .currencies
+            .get(&CurrencyType::Diamonds)
+            .copied()
+            .unwrap_or(0);
+
+        self.compose(&UserCurrencyComposer::new(pixels, diamonds))
+            .await
+    }
 }
 
 impl Actor for UserActor {
@@ -68,6 +92,7 @@ impl Actor for UserActor {
         match cmd {
             UserCommand::GetUserInfo => self.on_get_user_info().await?,
             UserCommand::SendInitialData => self.on_send_initial_data().await?,
+            UserCommand::GetCurrency => self.on_get_currency().await?,
             _ => todo!(),
         }
 

@@ -1,10 +1,10 @@
-use sirius_types::Currency;
+use sirius_types::CurrencyType;
 
 #[derive(Debug)]
 pub enum UserCommand {
     GetUserInfo,
     GetCredits,
     GetCurrency,
-    UpdateWallet(Currency),
+    UpdateWallet(CurrencyType, i32),
     SendInitialData,
 }

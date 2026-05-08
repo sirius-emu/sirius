@@ -13,6 +13,6 @@ pub mod enums;
 pub mod ids;
 
 pub use coords::{Direction, Vec2, Vec3};
-pub use currency::{Currency, CurrencyType};
+pub use currency::CurrencyType;
 pub use enums::Gender;
 pub use ids::{ItemId, RoomId, UserId};

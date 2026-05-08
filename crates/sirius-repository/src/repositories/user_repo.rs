@@ -111,14 +111,10 @@ impl UserRepository {
         .await
         .map_err(|e| SiriusError::Database(DatabaseError::QueryFailed { reason: e.to_string() }))?;
 
-        let mut currencies = HashMap::with_capacity(rows.len());
-        for row in rows {
-            let c_type = CurrencyType::from(row.currency_type);
-
-            currencies.insert(c_type, row.amount);
-        }
-
-        Ok(currencies)
+        Ok(rows
+            .into_iter()
+            .map(|r| (CurrencyType::from(r.currency_type), r.amount))
+            .collect())
     }
 }
 
