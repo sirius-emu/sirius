@@ -9,7 +9,7 @@ use sirius_packets::incoming::handshake::{
     PingPacket, PongPacket, ReleaseVersionPacket, SsoTicketPacket,
 };
 use sirius_packets::outgoing::handshake::{
-    AuthOkComposer, PingComposer, PongComposer,
+    AuthOkComposer, AvailabilityStatusComposer, PingComposer, PongComposer,
 };
 use sirius_packets::{IncomingPacket, OutgoingPacket};
 use sirius_repository::Repository;
@@ -206,6 +206,9 @@ impl Session {
         self.manager.register(user_id, ctx.handle().clone());
 
         self.compose(&AuthOkComposer).await?;
+
+        self.compose(&AvailabilityStatusComposer::new(false, false, false))
+            .await?;
 
         Ok(())
     }
