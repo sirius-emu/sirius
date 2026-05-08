@@ -1,6 +1,6 @@
 <div align="center">
 
-![Sirius](sirius.png)
+<img src="sirius.svg" alt="Sirius" height="50%">
 
 *A highly concurrent retro emulator written in Rust.*
 
