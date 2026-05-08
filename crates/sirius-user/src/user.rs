@@ -68,9 +68,6 @@ impl Actor for UserActor {
         match cmd {
             UserCommand::GetUserInfo => self.on_get_user_info().await?,
             UserCommand::SendInitialData => self.on_send_initial_data().await?,
-            UserCommand::Disconnect => {
-                return Err(SiriusError::Auth(AuthError::NotAuthenticated));
-            }
             _ => todo!(),
         }
 

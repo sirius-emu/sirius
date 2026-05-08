@@ -6,6 +6,5 @@ pub enum UserCommand {
     GetCredits,
     GetCurrency,
     UpdateWallet(Currency),
-    Disconnect,
     SendInitialData,
 }
