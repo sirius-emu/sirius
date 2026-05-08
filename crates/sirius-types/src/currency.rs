@@ -22,7 +22,7 @@ impl CurrencyType {
     pub const fn type_id(self) -> i32 {
         match self {
             Self::Credits => -1,
-            Self::Pixels => 1,
+            Self::Pixels => 0,
             Self::Diamonds => 5,
             Self::Seasonal(n) => n,
         }
