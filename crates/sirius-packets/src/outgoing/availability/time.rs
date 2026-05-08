@@ -25,7 +25,7 @@ impl OutgoingPacket for AvailabilityTimeComposer {
     fn serialize(&self) -> Result<RawPacket, SiriusError> {
         let mut w = PacketWriter::new(Self::HEADER_ID);
 
-        w.write_bool(self.is_open)
+        w.write_i32(if self.is_open { 1 } else { 0 })
             .write_i32(self.minutes_until_change);
 
         w.finish_ok()
