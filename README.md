@@ -4,9 +4,10 @@
 
 *A highly concurrent retro emulator written in Rust.*
 
-[![Status](https://img.shields.io/badge/status-early%20development-ffb3c6?style=flat-square&labelColor=ffd6e0)](#)
+[![Status](https://img.shields.io/badge/status-early%20development-b8e1ff?style=flat-square&labelColor=dff2ff)](#)
 [![License](https://img.shields.io/badge/license-AGPL--3.0-c9b8f5?style=flat-square&labelColor=e8ddff)](LICENSE)
 [![Rust](https://img.shields.io/badge/rust-1.78%2B-ffc8a0?style=flat-square&labelColor=ffe5d0)](#)
+[![Made with love](https://img.shields.io/badge/made%20with-♡-ffb3c6?style=flat-square&labelColor=ffd6e0)](#)
 
 </div>
 
