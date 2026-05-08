@@ -65,6 +65,7 @@ impl fmt::Display for Currency {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum CurrencyType {
+    Credits,
     Pixels,
     Diamonds,
     Seasonal(i32),

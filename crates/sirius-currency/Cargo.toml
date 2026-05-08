@@ -1,0 +1,14 @@
+[package]
+name = "sirius-currency"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+sirius-error.workspace = true
+sirius-config.workspace = true
+sirius-types.workspace = true
+sirius-database.workspace = true
+sqlx.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+thiserror.workspace = true

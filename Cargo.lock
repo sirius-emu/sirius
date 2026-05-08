@@ -1365,6 +1365,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "sirius-currency"
+version = "0.1.0"
+dependencies = [
+ "sirius-config",
+ "sirius-database",
+ "sirius-error",
+ "sirius-types",
+ "sqlx",
+ "thiserror",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
 name = "sirius-database"
 version = "0.1.0"
 dependencies = [

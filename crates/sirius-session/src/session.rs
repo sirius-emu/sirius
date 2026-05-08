@@ -18,7 +18,7 @@ use sirius_packets::incoming::handshake::{
 };
 use sirius_packets::outgoing::availability::AvailabilityStatusComposer;
 use sirius_packets::outgoing::handshake::{
-    AuthenticatedComposer, PingComposer, PongComposer,
+    AuthenticatedComposer, PingComposer, PongComposer, UserInfoComposer,
 };
 
 /// The session actor state.
@@ -206,9 +206,9 @@ impl Session {
         self.manager.register(user_id, ctx.handle().clone());
 
         self.compose(&AuthenticatedComposer).await?;
-
         self.compose(&AvailabilityStatusComposer::new(false, false, false))
             .await?;
+        self.compose(&UserInfoComposer::new(user)).await?;
 
         Ok(())
     }
