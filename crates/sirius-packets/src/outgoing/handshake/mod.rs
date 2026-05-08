@@ -1,5 +1,5 @@
-mod auth_ok;
+mod authenticated;
 mod ping_pong;
 
-pub use auth_ok::AuthOkComposer;
+pub use authenticated::AuthenticatedComposer;
 pub use ping_pong::{PingComposer, PongComposer};
