@@ -4,11 +4,11 @@ use crate::prelude::*;
 ///
 /// The client announces its release version string. The server does not need
 /// to validate or act on this value, it is informational only.
-pub struct ReleaseVersionPacket {
+pub struct ClientHelloPacket {
     pub release_version: String,
 }
 
-impl IncomingPacket for ReleaseVersionPacket {
+impl IncomingPacket for ClientHelloPacket {
     const HEADER_ID: u16 = 4000;
 
     fn parse(reader: &mut PacketReader) -> Result<Self, SiriusError> {

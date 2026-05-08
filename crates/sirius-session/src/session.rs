@@ -5,12 +5,6 @@ use sirius_actor::{Actor, ActorContext};
 use sirius_codec::RawPacket;
 use sirius_error::SiriusError;
 use sirius_network::{Connection, ConnectionId};
-use sirius_packets::incoming::handshake::{
-    PingPacket, PongPacket, ReleaseVersionPacket, SsoTicketPacket,
-};
-use sirius_packets::outgoing::handshake::{
-    AuthOkComposer, AvailabilityStatusComposer, PingComposer, PongComposer,
-};
 use sirius_packets::{IncomingPacket, OutgoingPacket};
 use sirius_repository::Repository;
 use sirius_repository::models::User;
@@ -18,6 +12,14 @@ use std::net::SocketAddr;
 use std::time::Instant;
 use tokio::sync::mpsc;
 use tracing::{debug, info, warn};
+
+use sirius_packets::incoming::handshake::{
+    ClientHelloPacket, PingPacket, PongPacket, SsoTicketPacket,
+};
+use sirius_packets::outgoing::availability::AvailabilityStatusComposer;
+use sirius_packets::outgoing::handshake::{
+    AuthOkComposer, PingComposer, PongComposer,
+};
 
 /// The session actor state.
 ///
@@ -84,9 +86,7 @@ impl Session {
         let header_id = raw.id();
 
         match header_id {
-            ReleaseVersionPacket::HEADER_ID => {
-                self.on_release_version(raw).await
-            }
+            ClientHelloPacket::HEADER_ID => self.on_client_hello(raw).await,
             PongPacket::HEADER_ID => self.on_pong().await,
             PingPacket::HEADER_ID => self.on_ping(raw).await,
             SsoTicketPacket::HEADER_ID => self.on_sso_ticket(raw, ctx).await,
@@ -103,15 +103,15 @@ impl Session {
         }
     }
 
-    async fn on_release_version(
+    async fn on_client_hello(
         &mut self,
         raw: RawPacket,
     ) -> Result<(), SiriusError> {
-        let packet = ReleaseVersionPacket::from_raw(raw)?;
+        let packet = ClientHelloPacket::from_raw(raw)?;
         info!(
             id = %self.id,
             release = %packet.release_version,
-            "client release version"
+            "client hello"
         );
 
         Ok(())
