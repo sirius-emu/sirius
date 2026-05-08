@@ -1416,6 +1416,7 @@ dependencies = [
  "bytes",
  "sirius-codec",
  "sirius-error",
+ "sirius-repository",
  "sirius-types",
  "tracing",
 ]

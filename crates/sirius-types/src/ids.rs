@@ -5,7 +5,7 @@
 //! the compiler won't catch it. These newtypes cost nothing at runtime and
 //! eliminate that class of mistakes entirely.
 //!
-//! All IDs are backed by `i64` to match the database column type directly.
+//! All IDs are backed by `i32` to.
 //! No conversion needed when reading from or writing to sqlx queries.
 
 use serde::{Deserialize, Serialize};
@@ -19,23 +19,23 @@ macro_rules! define_id {
         $(#[$attr])*
         #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
         #[serde(transparent)]
-        pub struct $name(pub i64);
+        pub struct $name(pub i32);
 
         impl $name {
             #[inline]
-            pub const fn inner(self) -> i64 {
+            pub const fn inner(self) -> i32 {
                 self.0
             }
         }
 
-        impl From<i64> for $name {
+        impl From<i32> for $name {
             #[inline]
-            fn from(v: i64) -> Self {
+            fn from(v: i32) -> Self {
                 Self(v)
             }
         }
 
-        impl From<$name> for i64 {
+        impl From<$name> for i32 {
             #[inline]
             fn from(id: $name) -> Self {
                 id.0
@@ -70,9 +70,9 @@ mod tests {
     }
 
     #[test]
-    fn roundtrip_i64() {
+    fn roundtrip_i32() {
         let id = RoomId::from(42);
-        let raw: i64 = id.into();
+        let raw: i32 = id.into();
         assert_eq!(raw, 42);
     }
 

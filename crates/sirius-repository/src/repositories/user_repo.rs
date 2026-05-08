@@ -1,6 +1,6 @@
 //! User database operations.
 
-use crate::models::User;
+use crate::models::{User, UserSettings, UserStats};
 use sirius_database::DbPool;
 use sirius_error::{DatabaseError, SiriusError};
 use sirius_types::{CurrencyType, Gender, RoomId, UserId};
@@ -23,11 +23,15 @@ impl UserRepository {
         let row = sqlx::query!(
             r#"
             SELECT
-                id, username, motto, look, gender, rank,
-                credits, home_room, account_created, last_online,
-                current_ip, machine_id
-            FROM users
-            WHERE auth_ticket = $1
+                u.id, u.username, u.motto, u.look, u.gender, u.rank,
+                u.credits, u.home_room, u.account_created, u.last_online,
+                u.current_ip, u.machine_id,
+                st.respects_received, st.daily_respects, st.daily_pet_respects,
+                se.can_change_name, se.safety_locked
+            FROM users u
+            INNER JOIN user_stats st ON st.user_id = u.id
+            INNER JOIN user_settings se ON se.user_id = u.id
+            WHERE u.auth_ticket = $1
             "#,
             ticket
         )
@@ -46,12 +50,21 @@ impl UserRepository {
 
         let user_id = UserId::from(row.id);
         let currencies = self.fetch_currencies(user_id).await?;
-
         let home_room = row.home_room.map(RoomId::from);
 
         let gender_char = row.gender.chars().next().unwrap_or('M');
-
         let gender = Gender::try_from(gender_char).unwrap_or(Gender::Male);
+
+        let stats = UserStats {
+            respects_received: row.respects_received,
+            respects_remaining: row.daily_respects,
+            respects_pet_remaining: row.daily_pet_respects,
+        };
+
+        let settings = UserSettings {
+            can_change_name: row.can_change_name,
+            safety_locked: row.safety_locked,
+        };
 
         Ok(User {
             id: user_id,
@@ -67,6 +80,8 @@ impl UserRepository {
             current_ip: row.current_ip,
             machine_id: row.machine_id,
             currencies,
+            stats,
+            settings,
         })
     }
 
@@ -88,7 +103,7 @@ impl UserRepository {
     async fn fetch_currencies(
         &self,
         user_id: UserId,
-    ) -> Result<HashMap<CurrencyType, i64>, SiriusError> {
+    ) -> Result<HashMap<CurrencyType, i32>, SiriusError> {
         let rows = sqlx::query!(
             r#"SELECT currency_type, amount FROM users_currency WHERE user_id = $1"#,
             user_id.0
