@@ -5,7 +5,3 @@
 //! register it here so call sites can import from `sirius_packets::incoming`.
 
 pub mod handshake;
-
-pub use handshake::{
-    PingPacket, PongPacket, ReleaseVersionPacket, SsoTicketPacket,
-};

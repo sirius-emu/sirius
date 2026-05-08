@@ -78,8 +78,7 @@ pub trait OutgoingPacket {
     /// Serializes this packet into a [`RawPacket`].
     fn serialize(&self) -> Result<RawPacket, SiriusError>;
 
-    /// Convenience method — writes through a [`PacketWriter`] and returns
-    /// the finished [`RawPacket`].
+    /// Writes through a [`PacketWriter`] and returns the finished [`RawPacket`].
     fn to_raw(&self) -> Result<RawPacket, SiriusError> {
         self.serialize()
     }

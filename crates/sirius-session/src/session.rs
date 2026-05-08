@@ -5,12 +5,13 @@ use sirius_actor::{Actor, ActorContext};
 use sirius_codec::RawPacket;
 use sirius_error::SiriusError;
 use sirius_network::{Connection, ConnectionId};
-use sirius_packets::incoming::{
-    PongPacket, ReleaseVersionPacket, SsoTicketPacket,
+use sirius_packets::incoming::handshake::{
+    PingPacket, PongPacket, ReleaseVersionPacket, SsoTicketPacket,
 };
-use sirius_packets::outgoing::AuthOkComposer;
-use sirius_packets::outgoing::handshake::{PingComposer, PongComposer};
-use sirius_packets::{IncomingPacket, OutgoingPacket, PingPacket};
+use sirius_packets::outgoing::handshake::{
+    AuthOkComposer, PingComposer, PongComposer,
+};
+use sirius_packets::{IncomingPacket, OutgoingPacket};
 use sirius_repository::Repository;
 use sirius_repository::models::User;
 use std::net::SocketAddr;
