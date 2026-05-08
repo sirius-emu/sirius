@@ -1,6 +1,6 @@
 use crate::error::CurrencyError;
 use sirius_database::DbPool;
-use sirius_types::{CurrencyType, UserId};
+use sirius_types::{Currency, UserId};
 
 pub struct CurrencyService {
     pool: DbPool,
@@ -14,10 +14,10 @@ impl CurrencyService {
     pub async fn get_balance(
         &self,
         user_id: UserId,
-        currency: CurrencyType,
+        currency: Currency,
     ) -> Result<i32, CurrencyError> {
         let balance = match currency {
-            CurrencyType::Credits => {
+            Currency::Credits(_) => {
                 sqlx::query_scalar!(
                     "SELECT credits FROM users WHERE id = $1",
                     user_id.0
@@ -29,7 +29,7 @@ impl CurrencyService {
                 "SELECT amount FROM users_currency
                     WHERE user_id = $1 AND currency_type = $2",
                 user_id.0,
-                currency as i32,
+                currency.type_id(),
             )
             .fetch_optional(&self.pool)
             .await?

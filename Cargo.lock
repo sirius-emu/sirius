@@ -1479,6 +1479,7 @@ dependencies = [
  "sirius-packets",
  "sirius-repository",
  "sirius-types",
+ "sirius-user",
  "tokio",
  "tracing",
  "uuid",
@@ -1501,6 +1502,22 @@ version = "0.1.0"
 dependencies = [
  "serde",
  "serde_json",
+]
+
+[[package]]
+name = "sirius-user"
+version = "0.1.0"
+dependencies = [
+ "sirius-actor",
+ "sirius-codec",
+ "sirius-currency",
+ "sirius-database",
+ "sirius-error",
+ "sirius-packets",
+ "sirius-repository",
+ "sirius-types",
+ "tokio",
+ "tracing",
 ]
 
 [[package]]

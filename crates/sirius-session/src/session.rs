@@ -8,17 +8,19 @@ use sirius_network::{Connection, ConnectionId};
 use sirius_packets::{IncomingPacket, OutgoingPacket};
 use sirius_repository::Repository;
 use sirius_repository::models::User;
+use sirius_user::{UserActor, UserCommand, UserHandle};
 use std::net::SocketAddr;
 use std::time::Instant;
 use tokio::sync::mpsc;
 use tracing::{debug, info, warn};
 
 use sirius_packets::incoming::handshake::{
-    ClientHelloPacket, PingPacket, PongPacket, SsoTicketPacket,
+    ClientHelloPacket, InfoRetrievePacket, PingPacket, PongPacket,
+    SsoTicketPacket,
 };
 use sirius_packets::outgoing::availability::AvailabilityStatusComposer;
 use sirius_packets::outgoing::handshake::{
-    AuthenticatedComposer, PingComposer, PongComposer, UserInfoComposer,
+    AuthenticatedComposer, PingComposer, PongComposer,
 };
 
 /// The session actor state.
@@ -34,6 +36,7 @@ pub struct Session {
     last_ping_at: Option<Instant>,
     manager: SessionManager,
     repo: Repository,
+    user_handle: Option<UserHandle>,
 }
 
 impl Session {
@@ -55,6 +58,7 @@ impl Session {
             last_ping_at: None,
             manager,
             repo,
+            user_handle: None,
         };
 
         (session, connection.inbound_rx)
@@ -90,8 +94,13 @@ impl Session {
             PongPacket::HEADER_ID => self.on_pong().await,
             PingPacket::HEADER_ID => self.on_ping(raw).await,
             SsoTicketPacket::HEADER_ID => self.on_sso_ticket(raw, ctx).await,
+            InfoRetrievePacket::HEADER_ID => {
+                if let Some(h) = &self.user_handle {
+                    h.send(UserCommand::GetUserInfo).await?;
+                }
+                Ok(())
+            }
             _ => {
-                // Unknown or not-yet-implemented packet.
                 debug!(
                     id = %self.id,
                     header_id,
@@ -193,7 +202,6 @@ impl Session {
         ctx: &ActorContext<SessionCommand>,
     ) -> Result<(), SiriusError> {
         let user_id = user.id;
-        self.auth_state = AuthState::Authenticated(user_id);
 
         info!(
             id = %self.id,
@@ -203,12 +211,16 @@ impl Session {
             "session authenticated"
         );
 
+        let actor = UserActor::new(user, self.outbound_tx.clone());
+        let handle = actor.spawn(64);
+
+        self.user_handle = Some(handle.clone());
         self.manager.register(user_id, ctx.handle().clone());
+        self.auth_state = AuthState::Authenticated(user_id);
 
         self.compose(&AuthenticatedComposer).await?;
         self.compose(&AvailabilityStatusComposer::new(false, false, false))
             .await?;
-        self.compose(&UserInfoComposer::new(user)).await?;
 
         Ok(())
     }

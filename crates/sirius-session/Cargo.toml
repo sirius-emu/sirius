@@ -10,6 +10,7 @@ sirius-actor.workspace = true
 sirius-codec.workspace = true
 sirius-repository.workspace = true
 sirius-packets.workspace = true
+sirius-user.workspace = true
 sirius-handshake.workspace = true
 sirius-network.workspace = true
 tokio.workspace = true
