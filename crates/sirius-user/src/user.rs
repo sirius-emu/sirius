@@ -3,7 +3,7 @@
 use sirius_actor::{Actor, ActorContext};
 use sirius_codec::RawPacket;
 use sirius_error::SiriusError;
-use sirius_packets::OutgoingPacket;
+use sirius_packets::{OutgoingPacket, outgoing::user::UserSettingsComposer};
 use sirius_repository::models::User;
 use sirius_types::CurrencyType;
 use tokio::sync::mpsc;
@@ -47,6 +47,9 @@ impl UserActor {
 
     pub async fn on_send_initial_data(&self) -> Result<(), SiriusError> {
         self.compose(&UserCreditsComposer::new(self.user.credits))
+            .await?;
+
+        self.compose(&UserSettingsComposer::new(self.user.settings.clone()))
             .await?;
 
         Ok(())

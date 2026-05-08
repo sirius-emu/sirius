@@ -13,6 +13,13 @@ pub struct UserStats {
 pub struct UserSettings {
     pub can_change_name: bool,
     pub safety_locked: bool,
+    pub volume_system: i32,
+    pub volume_furni: i32,
+    pub volume_trax: i32,
+    pub old_chat: bool,
+    pub room_invites: bool,
+    pub camera_follow: bool,
+    pub chat_type: i32,
 }
 
 #[derive(Debug, Clone)]

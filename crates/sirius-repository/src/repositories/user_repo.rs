@@ -27,10 +27,12 @@ impl UserRepository {
                 u.credits, u.home_room, u.account_created, u.last_online,
                 u.current_ip, u.machine_id,
                 st.respects_received, st.daily_respects, st.daily_pet_respects,
-                se.can_change_name, se.safety_locked
+                se.can_change_name, se.safety_locked, se.volume_system, se.volume_furni,
+                se.volume_trax, se.old_chat, se.room_invites, se.camera_follow,
+                se.chat_type
             FROM users u
-            INNER JOIN user_stats st ON st.user_id = u.id
-            INNER JOIN user_settings se ON se.user_id = u.id
+            INNER JOIN users_stats st ON st.user_id = u.id
+            INNER JOIN users_settings se ON se.user_id = u.id
             WHERE u.auth_ticket = $1
             "#,
             ticket
@@ -64,6 +66,13 @@ impl UserRepository {
         let settings = UserSettings {
             can_change_name: row.can_change_name,
             safety_locked: row.safety_locked,
+            volume_system: row.volume_system,
+            volume_furni: row.volume_furni,
+            volume_trax: row.volume_trax,
+            old_chat: row.old_chat,
+            room_invites: row.room_invites,
+            camera_follow: row.camera_follow,
+            chat_type: row.chat_type,
         };
 
         Ok(User {
