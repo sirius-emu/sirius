@@ -1,11 +1,11 @@
 [package]
 name = "sirius-codec"
-version = "0.1.0"
-edition = "2024"
+version.workspace = true
+edition.workspace = true
 
 [dependencies]
+sirius-error.workspace = true
 bytes.workspace = true
-sirius-error = { path = "../sirius-error" }
 tracing.workspace = true
 tokio.workspace = true
 tokio-util.workspace = true

@@ -1,11 +1,11 @@
 [package]
 name = "sirius-packets"
-version = "0.1.0"
-edition = "2024"
+version.workspace = true
+edition.workspace = true
 
 [dependencies]
-sirius-error = { path = "../sirius-error" }
-sirius-codec = { path = "../sirius-codec" }
-sirius-types = { path = "../sirius-types" }
+sirius-error.workspace = true
+sirius-codec.workspace = true
+sirius-types.workspace = true
 bytes.workspace = true
 tracing.workspace = true

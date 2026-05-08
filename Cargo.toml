@@ -2,7 +2,23 @@
 resolver = "2"
 members = ["crates/*"]
 
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+publish = false
+
 [workspace.dependencies]
+sirius-actor = { path = "crates/sirius-actor" }
+sirius-codec = { path = "crates/sirius-codec" }
+sirius-config = { path = "crates/sirius-config" }
+sirius-database = { path = "crates/sirius-database" }
+sirius-error = { path = "crates/sirius-error" }
+sirius-network = { path = "crates/sirius-network" }
+sirius-packets = { path = "crates/sirius-packets" }
+sirius-session = { path = "crates/sirius-session" }
+sirius-tracing = { path = "crates/sirius-tracing" }
+sirius-types = { path = "crates/sirius-types" }
+sirius-websocket = { path = "crates/sirius-websocket" }
 bytes = "1.11.1"
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.149"
@@ -23,3 +39,17 @@ tracing-subscriber = { version = "0.3.23", features = [
 ] }
 tokio-util = { version = "0.7.18", features = ["codec"] }
 dashmap = "6.1.0"
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = true
+
+[profile.dev.package."*"]
+opt-level = 3
+
+[workspace.lints.clippy]
+all = "warn"
+unwrap_used = "warn"

@@ -1,14 +1,14 @@
 [package]
 name = "sirius-server"
-version = "0.1.0"
-edition = "2024"
+version.workspace = true
+edition.workspace = true
 
 [dependencies]
-sirius-config = { path = "../sirius-config" }
-sirius-tracing = { path = "../sirius-tracing" }
-sirius-network = { path = "../sirius-network" }
-sirius-session = { path = "../sirius-session" }
-sirius-database = { path = "../sirius-database" }
+sirius-config.workspace = true
+sirius-tracing.workspace = true
+sirius-network.workspace = true
+sirius-session.workspace = true
+sirius-database.workspace = true
 tokio.workspace = true
 tracing.workspace = true
 rand = "0.10.1"

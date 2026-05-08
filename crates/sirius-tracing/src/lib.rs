@@ -35,17 +35,6 @@ use sirius_config::TracingConfig;
 /// # Errors
 ///
 /// Returns [`TracingError`] if the subscriber cannot be installed.
-///
-/// # Example
-///
-/// ```no_run
-/// use sirius_tracing::TracingConfig;
-///
-/// fn main() {
-///     sirius_tracing::init(TracingConfig::default()).expect("failed to init tracing");
-///     tracing::info!("server starting");
-/// }
-/// ```
 pub fn init(config: &TracingConfig) -> Result<(), TracingError> {
     subscriber::install(config)
 }

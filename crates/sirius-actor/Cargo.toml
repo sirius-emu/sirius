@@ -1,9 +1,9 @@
 [package]
 name = "sirius-actor"
-version = "0.1.0"
-edition = "2024"
+version.workspace = true
+edition.workspace = true
 
 [dependencies]
-sirius-error = { path = "../sirius-error" }
+sirius-error.workspace = true
 tokio = { workspace = true, features = ["time"] }
 tracing.workspace = true

@@ -1,15 +1,15 @@
 [package]
 name = "sirius-network"
-version = "0.1.0"
-edition = "2024"
+version.workspace = true
+edition.workspace = true
 
 [dependencies]
-sirius-error = { path = "../sirius-error" }
-sirius-types = { path = "../sirius-types" }
-sirius-config = { path = "../sirius-config" }
-sirius-codec = { path = "../sirius-codec" }
-sirius-actor = { path = "../sirius-actor" }
-sirius-websocket = { path = "../sirius-websocket" }
+sirius-error.workspace = true
+sirius-types.workspace = true
+sirius-config.workspace = true
+sirius-codec.workspace = true
+sirius-actor.workspace = true
+sirius-websocket.workspace = true
 tokio.workspace = true
 tokio-util.workspace = true
 bytes.workspace = true
