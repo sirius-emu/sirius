@@ -21,7 +21,7 @@ include_location = false
 include_target = true
 
 [database]
-url = "postgres://username:password@host:port/dbname"
+url = "postgres://user:password@host:port/dbname"
 max_connections = 10
 min_connections = 1
 acquire_timeout_secs = 5

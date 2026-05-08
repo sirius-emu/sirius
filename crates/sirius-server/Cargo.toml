@@ -13,3 +13,4 @@ sirius-database.workspace = true
 tokio.workspace = true
 tracing.workspace = true
 rand = "0.10.1"
+dotenvy = "0.15.7"

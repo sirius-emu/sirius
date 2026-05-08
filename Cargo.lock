@@ -1439,6 +1439,7 @@ dependencies = [
 name = "sirius-server"
 version = "0.1.0"
 dependencies = [
+ "dotenvy",
  "rand 0.10.1",
  "sirius-config",
  "sirius-database",

@@ -16,6 +16,8 @@ use crate::context::ServerContext;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    dotenvy::dotenv().ok();
+
     let env_name = std::env::var("SIRIUS_ENV").unwrap_or_else(|_| {
         if cfg!(debug_assertions) {
             "development".to_string()
