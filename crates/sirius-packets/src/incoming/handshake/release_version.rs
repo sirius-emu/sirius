@@ -1,5 +1,4 @@
-use crate::{IncomingPacket, PacketReader};
-use sirius_error::SiriusError;
+use crate::prelude::*;
 
 /// First packet the Nitro client sends after establishing a TCP connection.
 ///
