@@ -17,7 +17,7 @@ pub fn print_sirius_banner(env: String) {
     let quotes = [
         "Morningstar said we'd rock in 2026. The Dogstar is ready.",
         "The brightest star in the sky.",
-        "Borrow checked approved this emulator.",
+        "Borrow checker approved this emulator.",
         "Safe, concurrent and ready to host.",
         "Thanks for the roadmap, Morningstar.",
         "A new star for a new era.",
