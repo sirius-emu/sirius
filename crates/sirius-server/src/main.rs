@@ -67,6 +67,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let (shutdown_tx, shutdown_rx) = watch::channel(false);
 
+    let router = Arc::new(sirius_handler::build_router());
+
     tokio::spawn(async move {
         tokio::signal::ctrl_c().await.unwrap();
         info!("received Ctrl-C, initiating graceful shutdown");
@@ -87,6 +89,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .run(shutdown_rx, move |connection| {
             let ctx = context.clone();
             let permissions = permissions.clone();
+            let session_router = Arc::clone(&router);
 
             async move {
                 spawn_session(
@@ -94,6 +97,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     ctx.sessions,
                     ctx.repository,
                     permissions,
+                    session_router,
                 );
             }
         })

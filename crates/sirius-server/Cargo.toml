@@ -11,6 +11,7 @@ sirius-network.workspace = true
 sirius-session.workspace = true
 sirius-repository.workspace = true
 sirius-database.workspace = true
+sirius-handler.workspace = true
 tokio.workspace = true
 tracing.workspace = true
 rand = "0.10.1"

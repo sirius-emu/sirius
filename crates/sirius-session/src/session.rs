@@ -4,8 +4,8 @@ use crate::{AuthState, SessionCommand, SessionManager};
 use sirius_actor::{Actor, ActorContext};
 use sirius_codec::RawPacket;
 use sirius_error::SiriusError;
+use sirius_handler::PacketRouter;
 use sirius_network::{Connection, ConnectionId};
-use sirius_packets::user::{UserCurrencyPacket, UserSaveLookPacket};
 use sirius_packets::{IncomingPacket, OutgoingPacket};
 use sirius_permissions::PermissionsManager;
 use sirius_repository::Repository;
@@ -18,8 +18,7 @@ use tokio::sync::mpsc;
 use tracing::{debug, info, warn};
 
 use sirius_packets::incoming::handshake::{
-    ClientHelloPacket, InfoRetrievePacket, PingPacket, PongPacket,
-    SsoTicketPacket,
+    ClientHelloPacket, PingPacket, PongPacket, SsoTicketPacket,
 };
 use sirius_packets::outgoing::availability::AvailabilityStatusComposer;
 use sirius_packets::outgoing::handshake::{
@@ -41,6 +40,8 @@ pub struct Session {
     repo: Repository,
     user_handle: Option<UserHandle>,
     permissions: Arc<PermissionsManager>,
+    pub auth_user: Option<Arc<sirius_handler::AuthenticatedUser>>,
+    router: Arc<sirius_handler::PacketRouter>,
 }
 
 impl Session {
@@ -54,6 +55,7 @@ impl Session {
         manager: SessionManager,
         repo: Repository,
         permissions: Arc<PermissionsManager>,
+        router: Arc<PacketRouter>,
     ) -> (Self, mpsc::Receiver<RawPacket>) {
         let session = Self {
             id: connection.id,
@@ -65,6 +67,8 @@ impl Session {
             repo,
             user_handle: None,
             permissions,
+            auth_user: None,
+            router,
         };
 
         (session, connection.inbound_rx)
@@ -100,40 +104,46 @@ impl Session {
             PongPacket::HEADER_ID => self.on_pong().await,
             PingPacket::HEADER_ID => self.on_ping(raw).await,
             SsoTicketPacket::HEADER_ID => self.on_sso_ticket(raw, ctx).await,
-            UserCurrencyPacket::HEADER_ID => {
-                if let Some(h) = &self.user_handle {
-                    h.send(UserCommand::GetCurrency).await?;
-                }
-                Ok(())
-            }
-            UserSaveLookPacket::HEADER_ID => {
-                let packet = UserSaveLookPacket::from_raw(raw)?;
-                if let Some(h) = &self.user_handle {
-                    h.send(UserCommand::UpdateLook {
-                        gender: packet.gender,
-                        look: packet.look,
-                    })
-                    .await?;
-                }
-                Ok(())
-            }
-            InfoRetrievePacket::HEADER_ID => {
-                if let Some(h) = &self.user_handle {
-                    h.send(UserCommand::GetUserInfo).await?;
-                }
-                Ok(())
-            }
             _ => {
-                debug!(
-                    id = %self.id,
-                    header_id,
-                    state = %self.auth_state,
-                    "unhandled packet"
-                );
+                if let (Some(auth_user), Some(user_handle)) =
+                    (&self.auth_user, &self.user_handle)
+                {
+                    let handler_ctx = sirius_handler::HandlerContext::new(
+                        self.outbound_tx.clone(),
+                        Arc::clone(auth_user),
+                        user_handle.clone(),
+                    );
+
+                    self.router.dispatch(raw, handler_ctx).await;
+                } else {
+                    debug!(
+                        id = %self.id,
+                        header_id,
+                        "unauthenticated packet dropped"
+                    );
+                }
                 Ok(())
             }
         }
     }
+
+    /*
+    InfoRetrievePacket::HEADER_ID => {
+        if let Some(h) = &self.user_handle {
+            h.send(UserCommand::GetUserInfo).await?;
+        }
+        Ok(())
+    }
+    _ => {
+        debug!(
+            id = %self.id,
+            header_id,
+            state = %self.auth_state,
+            "unhandled packet"
+        );
+        Ok(())
+    }
+    */
 
     async fn on_client_hello(
         &mut self,
@@ -234,6 +244,12 @@ impl Session {
             "session authenticated"
         );
 
+        let auth_user = Arc::new(sirius_handler::AuthenticatedUser {
+            id: user.id,
+            username: user.username.clone(),
+            rank: user.rank,
+        });
+
         let actor = UserActor::new(
             user,
             self.outbound_tx.clone(),
@@ -245,6 +261,7 @@ impl Session {
         self.user_handle = Some(handle.clone());
         self.manager.register(user_id, ctx.handle().clone());
         self.auth_state = AuthState::Authenticated(user_id);
+        self.auth_user = Some(auth_user);
 
         handle.send(UserCommand::SendInitialData).await?;
 
@@ -360,9 +377,15 @@ pub fn spawn_session(
     manager: SessionManager,
     repo: Repository,
     permissions: Arc<PermissionsManager>,
+    router: Arc<PacketRouter>,
 ) -> crate::SessionHandle {
-    let (session, mut inbound_rx) =
-        Session::from_connection(connection, manager, repo, permissions);
+    let (session, mut inbound_rx) = Session::from_connection(
+        connection,
+        manager,
+        repo,
+        permissions,
+        router,
+    );
     let handle = session.spawn(256);
     let pump_handle = handle.clone();
 

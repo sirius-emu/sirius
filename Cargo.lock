@@ -1407,6 +1407,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "sirius-handler"
+version = "0.1.0"
+dependencies = [
+ "sirius-codec",
+ "sirius-error",
+ "sirius-packets",
+ "sirius-types",
+ "sirius-user",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
 name = "sirius-handshake"
 version = "0.1.0"
 dependencies = [
@@ -1478,6 +1491,7 @@ dependencies = [
  "rand 0.10.1",
  "sirius-config",
  "sirius-database",
+ "sirius-handler",
  "sirius-network",
  "sirius-permissions",
  "sirius-repository",
@@ -1495,6 +1509,7 @@ dependencies = [
  "sirius-actor",
  "sirius-codec",
  "sirius-error",
+ "sirius-handler",
  "sirius-handshake",
  "sirius-network",
  "sirius-packets",

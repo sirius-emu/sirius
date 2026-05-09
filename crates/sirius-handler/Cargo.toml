@@ -1,0 +1,13 @@
+[package]
+name = "sirius-handler"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+sirius-error.workspace = true
+sirius-types.workspace = true
+sirius-packets.workspace = true
+sirius-codec.workspace = true
+sirius-user.workspace = true
+tracing.workspace = true
+tokio.workspace = true
