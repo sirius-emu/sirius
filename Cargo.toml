@@ -17,6 +17,7 @@ sirius-user = { path = "crates/sirius-user" }
 sirius-error = { path = "crates/sirius-error" }
 sirius-network = { path = "crates/sirius-network" }
 sirius-packets = { path = "crates/sirius-packets" }
+sirius-navigator = { path = "crates/sirius-navigator" }
 sirius-repository = { path = "crates/sirius-repository" }
 sirius-permissions = { path = "crates/sirius-permissions" }
 sirius-handler = { path = "crates/sirius-handler" }

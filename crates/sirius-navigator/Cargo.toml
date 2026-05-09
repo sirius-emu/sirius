@@ -1,0 +1,10 @@
+[package]
+name = "sirius-navigator"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+sirius-error.workspace = true
+sirius-types.workspace = true
+sirius-repository.workspace = true
+tokio.workspace = true
