@@ -76,3 +76,36 @@ INSERT INTO permissions_ranks (id, name, level) VALUES
 INSERT INTO permissions_rank_permissions (rank_id, key, setting)
 SELECT 5, key, 1
 FROM (VALUES ('social.ambassador')) AS t(key);
+
+CREATE TABLE navigator_categories (
+    id INT PRIMARY KEY,
+    name VARCHAR(64) NOT NULL,
+    min_rank INT NOT NULL DEFAULT 1,
+    public BOOLEAN NOT NULL DEFAULT TRUE,
+    sort_order INT NOT NULL DEFAULT 0
+);
+
+INSERT INTO navigator_categories (id, name, min_rank, public, sort_order) VALUES
+    (1,  'Base Rooms',       1, TRUE,  0),
+    (2,  'Trading',          1, TRUE,  1),
+    (3,  'Games',            1, TRUE,  2),
+    (4,  'Roleplay',         1, TRUE,  3),
+    (5,  'Music',            1, TRUE,  4),
+    (6,  'Help',             1, TRUE,  5),
+    (7,  'Staff Rooms',      4, FALSE, 6);
+
+
+CREATE TABLE rooms (
+    id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    owner_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    name VARCHAR(64) NOT NULL,
+    description VARCHAR(255) NOT NULL DEFAULT '',
+    password VARCHAR(64) NOT NULL DEFAULT '',
+    max_users INT NOT NULL DEFAULT 25,
+    category INT NOT NULL DEFAULT 1 REFERENCES navigator_categories(id),
+    lock_type INT NOT NULL DEFAULT 0,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_rooms_owner_id ON rooms (owner_id);
+CREATE INDEX idx_rooms_category ON rooms (category);

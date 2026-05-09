@@ -14,5 +14,5 @@ pub mod ids;
 
 pub use coords::{Direction, Vec2, Vec3};
 pub use currency::CurrencyType;
-pub use enums::Gender;
+pub use enums::{Gender, RoomCategory, RoomLockType};
 pub use ids::{ItemId, RoomId, UserId};

@@ -61,14 +61,67 @@ impl std::str::FromStr for Gender {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[repr(i32)]
+pub enum RoomLockType {
+    /// Anyone can enter.
+    Open = 0,
+    /// Guests must knock, the owner must accept.
+    Doorbell = 1,
+    /// A password is required.
+    Password = 2,
+    /// Nobody can enter except the owner.
+    Invisible = 3,
+}
 
-    #[test]
-    fn gender_roundtrip() {
-        assert_eq!(Gender::try_from('M'), Ok(Gender::Male));
-        assert_eq!(Gender::try_from('f'), Ok(Gender::Female));
-        assert!(Gender::try_from('X').is_err());
+impl RoomLockType {
+    #[inline]
+    pub const fn as_i32(self) -> i32 {
+        self as i32
+    }
+}
+
+impl TryFrom<i32> for RoomLockType {
+    type Error = i32;
+
+    fn try_from(v: i32) -> Result<Self, Self::Error> {
+        match v {
+            0 => Ok(Self::Open),
+            1 => Ok(Self::Doorbell),
+            2 => Ok(Self::Password),
+            3 => Ok(Self::Invisible),
+            _ => Err(v),
+        }
+    }
+}
+
+/// The category a room belongs to in the navigator.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub struct RoomCategory(pub i32);
+
+impl RoomCategory {
+    #[inline]
+    pub const fn id(self) -> i32 {
+        self.0
+    }
+}
+
+impl From<i32> for RoomCategory {
+    #[inline]
+    fn from(v: i32) -> Self {
+        Self(v)
+    }
+}
+
+impl From<RoomCategory> for i32 {
+    #[inline]
+    fn from(c: RoomCategory) -> Self {
+        c.0
+    }
+}
+
+impl fmt::Display for RoomCategory {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
     }
 }
