@@ -127,24 +127,6 @@ impl Session {
         }
     }
 
-    /*
-    InfoRetrievePacket::HEADER_ID => {
-        if let Some(h) = &self.user_handle {
-            h.send(UserCommand::GetUserInfo).await?;
-        }
-        Ok(())
-    }
-    _ => {
-        debug!(
-            id = %self.id,
-            header_id,
-            state = %self.auth_state,
-            "unhandled packet"
-        );
-        Ok(())
-    }
-    */
-
     async fn on_client_hello(
         &mut self,
         raw: RawPacket,
