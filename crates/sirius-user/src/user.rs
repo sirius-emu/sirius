@@ -9,7 +9,6 @@ use sirius_packets::{OutgoingPacket, outgoing::user::UpdateUserLookComposer};
 use sirius_permissions::PermissionsManager;
 use sirius_repository::{Repository, models::User};
 use sirius_types::{CurrencyType, Gender};
-use std::str::FromStr;
 use tokio::sync::mpsc;
 use tracing::{info, warn};
 
@@ -117,7 +116,10 @@ impl UserActor {
 
         self.user.look = look.clone();
         self.user.gender = gender.parse::<Gender>().map_err(|_| {
-            SiriusError::Actor(sirius_error::ActorError::Stopped)
+            SiriusError::Protocol(sirius_error::ProtocolError::InvalidString {
+                header_id: 2730,
+                offset: 0,
+            })
         })?;
 
         self.compose(&UpdateUserLookComposer::new(gender, look))

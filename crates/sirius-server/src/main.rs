@@ -79,9 +79,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let listener =
         Listener::bind(addr, &shared_config.network, manager, close_tx).await?;
 
-    banner::print_sirius_banner(&shared_config.server.environment);
-
     let permissions = Arc::new(PermissionsManager::load(pool.clone()).await?);
+
+    banner::print_sirius_banner(&shared_config.server.environment);
 
     listener
         .run(shutdown_rx, move |connection| {

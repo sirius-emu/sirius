@@ -118,7 +118,7 @@ impl UserRepository {
             user_id.0
         ).fetch_all(&self.pool)
         .await
-        .map_err(|e| SiriusError::Database(DatabaseError::QueryFailed { reason: e.to_string() }))?;
+        .map_err(map_sqlx_error)?;
 
         Ok(rows
             .into_iter()
