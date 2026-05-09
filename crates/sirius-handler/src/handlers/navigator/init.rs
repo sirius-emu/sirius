@@ -2,8 +2,9 @@ use crate::prelude::*;
 use sirius_packets::{
     incoming::navigator::NavigatorInitPacket,
     outgoing::navigator::{
-        NavigatorEventCategoriesComposer, NavigatorMetaDataComposer,
-        NavigatorSettingsComposer,
+        NavigatorCollapsedCategoriesComposer, NavigatorEventCategoriesComposer,
+        NavigatorLiftedRoomsComposer, NavigatorMetaDataComposer,
+        NavigatorSavedSearches, NavigatorSettingsComposer,
     },
 };
 
@@ -21,6 +22,10 @@ impl PacketHandler for NavigatorInitHandler {
         ctx.compose(&NavigatorSettingsComposer::new()).await?;
         ctx.compose(&NavigatorEventCategoriesComposer::new())
             .await?;
+        ctx.compose(&NavigatorCollapsedCategoriesComposer::new())
+            .await?;
+        ctx.compose(&NavigatorSavedSearches::new()).await?;
+        ctx.compose(&NavigatorLiftedRoomsComposer::new()).await?;
 
         Ok(())
     }
