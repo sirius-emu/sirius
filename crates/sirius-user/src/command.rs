@@ -7,4 +7,5 @@ pub enum UserCommand {
     GetCurrency,
     UpdateWallet(CurrencyType, i32),
     SendInitialData,
+    UpdateLook { gender: String, look: String },
 }

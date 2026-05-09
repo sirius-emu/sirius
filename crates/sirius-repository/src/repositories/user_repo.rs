@@ -125,6 +125,25 @@ impl UserRepository {
             .map(|r| (CurrencyType::from(r.currency_type), r.amount))
             .collect())
     }
+
+    pub async fn update_look(
+        &self,
+        user_id: UserId,
+        look: &str,
+        gender: &str,
+    ) -> Result<(), SiriusError> {
+        sqlx::query!(
+            "UPDATE users SET look = $1, gender = $2 WHERE id = $3",
+            look,
+            gender,
+            user_id.0,
+        )
+        .execute(&self.pool)
+        .await
+        .map_err(map_sqlx_error)?;
+
+        Ok(())
+    }
 }
 
 fn map_sqlx_error(err: sqlx::Error) -> SiriusError {

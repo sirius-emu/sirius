@@ -48,6 +48,19 @@ impl fmt::Display for Gender {
     }
 }
 
+impl std::str::FromStr for Gender {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        s.chars()
+            .next()
+            .ok_or_else(|| format!("empty gender string"))
+            .and_then(|c| {
+                Gender::try_from(c).map_err(|c| format!("invalid gender: {c}"))
+            })
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

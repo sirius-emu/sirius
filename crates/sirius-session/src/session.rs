@@ -5,7 +5,7 @@ use sirius_actor::{Actor, ActorContext};
 use sirius_codec::RawPacket;
 use sirius_error::SiriusError;
 use sirius_network::{Connection, ConnectionId};
-use sirius_packets::user::UserCurrencyPacket;
+use sirius_packets::user::{UserCurrencyPacket, UserSaveLookPacket};
 use sirius_packets::{IncomingPacket, OutgoingPacket};
 use sirius_permissions::PermissionsManager;
 use sirius_repository::Repository;
@@ -103,6 +103,17 @@ impl Session {
             UserCurrencyPacket::HEADER_ID => {
                 if let Some(h) = &self.user_handle {
                     h.send(UserCommand::GetCurrency).await?;
+                }
+                Ok(())
+            }
+            UserSaveLookPacket::HEADER_ID => {
+                let packet = UserSaveLookPacket::from_raw(raw)?;
+                if let Some(h) = &self.user_handle {
+                    h.send(UserCommand::UpdateLook {
+                        gender: packet.gender,
+                        look: packet.look,
+                    })
+                    .await?;
                 }
                 Ok(())
             }
@@ -227,6 +238,7 @@ impl Session {
             user,
             self.outbound_tx.clone(),
             self.permissions.clone(),
+            self.repo.clone(),
         );
         let handle = actor.spawn(64);
 

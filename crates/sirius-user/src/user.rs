@@ -5,10 +5,11 @@ use std::sync::Arc;
 use sirius_actor::{Actor, ActorContext};
 use sirius_codec::RawPacket;
 use sirius_error::SiriusError;
-use sirius_packets::OutgoingPacket;
+use sirius_packets::{OutgoingPacket, outgoing::user::UpdateUserLookComposer};
 use sirius_permissions::PermissionsManager;
-use sirius_repository::models::User;
-use sirius_types::CurrencyType;
+use sirius_repository::{Repository, models::User};
+use sirius_types::{CurrencyType, Gender};
+use std::str::FromStr;
 use tokio::sync::mpsc;
 use tracing::{info, warn};
 
@@ -26,6 +27,7 @@ pub struct UserActor {
     user: User,
     outbound_tx: mpsc::Sender<RawPacket>,
     permissions: Arc<PermissionsManager>,
+    repo: Repository,
 }
 
 impl UserActor {
@@ -33,11 +35,13 @@ impl UserActor {
         user: User,
         outbound_tx: mpsc::Sender<RawPacket>,
         permissions: Arc<PermissionsManager>,
+        repo: Repository,
     ) -> Self {
         Self {
             user,
             outbound_tx,
             permissions,
+            repo,
         }
     }
 
@@ -99,6 +103,26 @@ impl UserActor {
         self.compose(&UserCurrencyComposer::new(pixels, diamonds))
             .await
     }
+
+    async fn on_update_look(
+        &mut self,
+        gender: String,
+        look: String,
+    ) -> Result<(), SiriusError> {
+        self.repo
+            .users
+            .update_look(self.user.id, &look, &gender)
+            .await
+            .unwrap();
+
+        self.user.look = look.clone();
+        self.user.gender = gender.parse::<Gender>().map_err(|_| {
+            SiriusError::Actor(sirius_error::ActorError::Stopped)
+        })?;
+
+        self.compose(&UpdateUserLookComposer::new(gender, look))
+            .await
+    }
 }
 
 impl Actor for UserActor {
@@ -122,6 +146,9 @@ impl Actor for UserActor {
             UserCommand::GetUserInfo => self.on_get_user_info().await?,
             UserCommand::SendInitialData => self.on_send_initial_data().await?,
             UserCommand::GetCurrency => self.on_get_currency().await?,
+            UserCommand::UpdateLook { gender, look } => {
+                self.on_update_look(gender, look).await?
+            }
             _ => todo!(),
         }
 
