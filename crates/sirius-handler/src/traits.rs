@@ -1,7 +1,7 @@
 //! The `PacketHandler` trait.
 
+use sirius_codec::RawPacket;
 use sirius_error::SiriusError;
-use sirius_packets::prelude::RawPacket;
 
 use crate::context::HandlerContext;
 

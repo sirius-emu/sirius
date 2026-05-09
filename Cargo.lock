@@ -1412,6 +1412,7 @@ version = "0.1.0"
 dependencies = [
  "sirius-codec",
  "sirius-error",
+ "sirius-navigator",
  "sirius-packets",
  "sirius-types",
  "sirius-user",
@@ -1502,6 +1503,7 @@ dependencies = [
  "sirius-config",
  "sirius-database",
  "sirius-handler",
+ "sirius-navigator",
  "sirius-network",
  "sirius-permissions",
  "sirius-repository",
@@ -1521,6 +1523,7 @@ dependencies = [
  "sirius-error",
  "sirius-handler",
  "sirius-handshake",
+ "sirius-navigator",
  "sirius-network",
  "sirius-packets",
  "sirius-permissions",

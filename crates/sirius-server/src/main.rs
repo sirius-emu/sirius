@@ -5,6 +5,7 @@ mod context;
 
 use sirius_config::Config;
 use sirius_database::Database;
+use sirius_navigator::NavigatorService;
 use sirius_network::{ConnectionManager, Listener, spawn_cleanup_task};
 use sirius_permissions::PermissionsManager;
 use sirius_repository::Repository;
@@ -56,7 +57,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let context = ServerContext {
         sessions: SessionManager::new(),
-        repository,
+        repository: repository.clone(),
     };
 
     let manager = ConnectionManager::new(
@@ -82,6 +83,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Listener::bind(addr, &shared_config.network, manager, close_tx).await?;
 
     let permissions = Arc::new(PermissionsManager::load(pool.clone()).await?);
+    let navigator = Arc::new(NavigatorService::new(repository.clone()));
 
     banner::print_sirius_banner(&shared_config.server.environment);
 
@@ -90,6 +92,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let ctx = context.clone();
             let permissions = permissions.clone();
             let session_router = Arc::clone(&router);
+            let session_navigator = Arc::clone(&navigator);
 
             async move {
                 spawn_session(
@@ -98,6 +101,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     ctx.repository,
                     permissions,
                     session_router,
+                    session_navigator,
                 );
             }
         })

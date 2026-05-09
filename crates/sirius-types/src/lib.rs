@@ -11,8 +11,10 @@ pub mod coords;
 pub mod currency;
 pub mod enums;
 pub mod ids;
+pub mod room;
 
 pub use coords::{Direction, Vec2, Vec3};
 pub use currency::CurrencyType;
 pub use enums::{Gender, RoomCategory, RoomLockType};
 pub use ids::{ItemId, RoomId, UserId};
+pub use room::RoomDisplayNode;

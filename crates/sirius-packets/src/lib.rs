@@ -30,7 +30,7 @@
 
 pub mod incoming;
 pub mod outgoing;
-pub mod prelude;
+mod prelude;
 pub mod reader;
 pub mod writer;
 

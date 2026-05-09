@@ -1,4 +1,4 @@
-use sirius_types::{RoomCategory, RoomId, RoomLockType, UserId};
+use crate::{RoomCategory, RoomId, RoomLockType, UserId};
 
 /// A lightweight snapshot of a room used exclusively for display in the Navigator.
 #[derive(Debug, Clone)]

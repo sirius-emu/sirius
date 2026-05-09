@@ -4,7 +4,8 @@ use crate::{AuthState, SessionCommand, SessionManager};
 use sirius_actor::{Actor, ActorContext};
 use sirius_codec::RawPacket;
 use sirius_error::SiriusError;
-use sirius_handler::PacketRouter;
+use sirius_handler::{AuthenticatedUser, PacketRouter};
+use sirius_navigator::NavigatorService;
 use sirius_network::{Connection, ConnectionId};
 use sirius_packets::{IncomingPacket, OutgoingPacket};
 use sirius_permissions::PermissionsManager;
@@ -40,8 +41,9 @@ pub struct Session {
     repo: Repository,
     user_handle: Option<UserHandle>,
     permissions: Arc<PermissionsManager>,
-    pub auth_user: Option<Arc<sirius_handler::AuthenticatedUser>>,
-    router: Arc<sirius_handler::PacketRouter>,
+    pub auth_user: Option<Arc<AuthenticatedUser>>,
+    router: Arc<PacketRouter>,
+    navigator: Arc<NavigatorService>,
 }
 
 impl Session {
@@ -56,6 +58,7 @@ impl Session {
         repo: Repository,
         permissions: Arc<PermissionsManager>,
         router: Arc<PacketRouter>,
+        navigator: Arc<NavigatorService>,
     ) -> (Self, mpsc::Receiver<RawPacket>) {
         let session = Self {
             id: connection.id,
@@ -69,6 +72,7 @@ impl Session {
             permissions,
             auth_user: None,
             router,
+            navigator,
         };
 
         (session, connection.inbound_rx)
@@ -112,6 +116,7 @@ impl Session {
                         self.outbound_tx.clone(),
                         Arc::clone(auth_user),
                         user_handle.clone(),
+                        Arc::clone(&self.navigator),
                     );
 
                     self.router.dispatch(raw, handler_ctx).await;
@@ -360,6 +365,7 @@ pub fn spawn_session(
     repo: Repository,
     permissions: Arc<PermissionsManager>,
     router: Arc<PacketRouter>,
+    navigator: Arc<NavigatorService>,
 ) -> crate::SessionHandle {
     let (session, mut inbound_rx) = Session::from_connection(
         connection,
@@ -367,6 +373,7 @@ pub fn spawn_session(
         repo,
         permissions,
         router,
+        navigator,
     );
     let handle = session.spawn(256);
     let pump_handle = handle.clone();

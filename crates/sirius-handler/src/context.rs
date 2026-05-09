@@ -1,7 +1,8 @@
 //! Handle execution context.
 
+use sirius_codec::RawPacket;
 use sirius_error::SiriusError;
-use sirius_packets::prelude::RawPacket;
+use sirius_navigator::NavigatorService;
 use sirius_types::UserId;
 use sirius_user::UserHandle;
 use std::sync::Arc;
@@ -13,6 +14,7 @@ pub struct HandlerContext {
     pub outbound_tx: mpsc::Sender<RawPacket>,
     pub user: Arc<AuthenticatedUser>,
     pub user_actor: UserHandle,
+    pub navigator: Arc<NavigatorService>,
 }
 
 /// The subset of user data that handlers commonly need.
@@ -31,11 +33,13 @@ impl HandlerContext {
         outbound_tx: mpsc::Sender<RawPacket>,
         user: Arc<AuthenticatedUser>,
         user_actor: UserHandle,
+        navigator: Arc<NavigatorService>,
     ) -> Self {
         Self {
             outbound_tx,
             user,
             user_actor,
+            navigator,
         }
     }
 

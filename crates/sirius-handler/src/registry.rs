@@ -11,7 +11,9 @@ pub fn build_router() -> PacketRouter {
         .register(UserInfoRetrieveHandler);
 
     // Navigator
-    builder.register(NavigatorInitHandler);
+    builder
+        .register(NavigatorInitHandler)
+        .register(NavigatorSearchHandler);
 
     builder.build()
 }
