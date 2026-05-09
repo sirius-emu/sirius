@@ -9,7 +9,7 @@ use crate::repositories::UserRepository;
 pub mod models;
 pub mod repositories;
 
-/// The cenral repository manager.
+/// The central repository manager.
 #[derive(Debug, Clone)]
 pub struct Repository {
     pub users: UserRepository,
