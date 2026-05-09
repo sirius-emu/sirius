@@ -1,7 +1,9 @@
 use crate::prelude::*;
 use sirius_packets::{
     incoming::navigator::NavigatorInitPacket,
-    outgoing::navigator::NavigatorMetaDataComposer,
+    outgoing::navigator::{
+        NavigatorMetaDataComposer, NavigatorSettingsComposer,
+    },
 };
 
 pub struct NavigatorInitHandler;
@@ -11,10 +13,12 @@ impl PacketHandler for NavigatorInitHandler {
 
     async fn handle(
         &self,
-        raw: RawPacket,
+        _raw: RawPacket,
         ctx: HandlerContext,
     ) -> Result<(), SiriusError> {
         ctx.compose(&NavigatorMetaDataComposer::new()).await?;
+
+        ctx.compose(&NavigatorSettingsComposer::new()).await?;
 
         Ok(())
     }
