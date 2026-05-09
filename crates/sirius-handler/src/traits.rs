@@ -32,7 +32,7 @@ pub trait PacketHandler: Send + Sync + 'static {
     /// [`IncomingPacket::from_raw`]: sirius_packets::IncomingPacket::from_raw
     fn handle(
         &self,
-        packet: RawPacket,
+        raw: RawPacket,
         ctx: HandlerContext,
     ) -> impl Future<Output = Result<(), SiriusError>> + Send;
 }
