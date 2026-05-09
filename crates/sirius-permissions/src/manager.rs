@@ -1,3 +1,22 @@
+//! Lock-free permission manager.
+//!
+//! [`PermissionsManager`] holds an [`ArcSwap`]-wrapper [`RankTable`] that can
+//! be hot-reloaded without blocking any reader. All permission checks are non-blocking
+//! and require no `await`.
+//!
+//! # How it works
+//!
+//! On [`load`] the full rank and permission dataset is fetched from the database and stored
+//! as an immutable [`RankTable`] behind an [`ArcSwap`]. Readers call [`load`] on the swap to
+//! get a lightweight guard that keeps the current snapshot alive for the duration of the check.
+//!
+//! On [`reload`] a fresh [`RankTable`] is built and automatically swapped in. Readers holding
+//! the old guard continue to see the previous snapshot until they drop it, at which point the
+//! old table is freed.
+//!
+//! [`load`]: PermissionsManager::load
+//! [`reload`]: PermissionsManager::reload
+
 use crate::{Permission, PermissionSetting, Rank, RankTable};
 use arc_swap::ArcSwap;
 use sirius_database::DbPool;
@@ -6,6 +25,9 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use tracing::info;
 
+/// Hot-reloadable permission manager.
+///
+/// Wrap in an [`Arc`] and share across subsystem. Cloning is cheap.
 #[derive(Debug, Clone)]
 pub struct PermissionsManager {
     table: Arc<ArcSwap<RankTable>>,
@@ -13,6 +35,9 @@ pub struct PermissionsManager {
 }
 
 impl PermissionsManager {
+    /// Loads all ranks and permissions from the database.
+    ///
+    /// Call once at startup and wrap the result in an [`Arc`].
     pub async fn load(pool: DbPool) -> Result<Self, SiriusError> {
         let table = Self::fetch_table(&pool).await?;
 
@@ -24,6 +49,10 @@ impl PermissionsManager {
         })
     }
 
+    /// Reloads ranks and permissions from the database and automatically
+    /// swaps the internal table.
+    ///
+    /// Safe to call while the server is running.
     pub async fn reload(&self) -> Result<(), SiriusError> {
         let table = Self::fetch_table(&self.pool).await?;
         info!(ranks = table.len(), "permissions reloaded");
@@ -31,6 +60,10 @@ impl PermissionsManager {
         Ok(())
     }
 
+    /// Returns `true` if the given rank holds the requested permission.
+    ///
+    /// `is_room_owner` is only relevant for permissions with a
+    /// [`PermissionSetting::RoomOwner`] setting.
     #[inline]
     pub fn has_permission(
         &self,
@@ -43,16 +76,26 @@ impl PermissionsManager {
             .has_permission(rank_id, permission, is_room_owner)
     }
 
+    /// Returns the [`Rank`] for the given ID, or `None` if it does not exist.
     #[inline]
     pub fn get_rank(&self, rank_id: i32) -> Option<Arc<Rank>> {
         self.table.load().get(rank_id).cloned()
     }
 
+    /// Returns a guard over the current [`RankTable`] snapshot.
+    ///
+    /// Prefer this over multiple individual calls when you need to
+    /// perform several permission checks. It guarantees a consistent view and
+    /// performs only one atomic load.
     #[inline]
     pub fn snapshot(&self) -> arc_swap::Guard<Arc<RankTable>> {
         self.table.load()
     }
 
+    /// Fetches ranks and permissions from the database and builds a
+    /// [`RankTable`]. Ranks are loaded first, then all permissions are
+    /// fetched in a single query and grouped by rank ID before being
+    /// merged into each [`Rank`].
     async fn fetch_table(pool: &DbPool) -> Result<RankTable, SiriusError> {
         let rank_rows = sqlx::query!(
             r#"
