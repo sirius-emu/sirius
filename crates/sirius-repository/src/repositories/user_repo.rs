@@ -6,6 +6,7 @@ use sirius_error::{DatabaseError, SiriusError};
 use sirius_types::{CurrencyType, Gender, RoomId, UserId};
 use std::collections::HashMap;
 
+/// Cheaply cloneable.
 #[derive(Debug, Clone)]
 pub struct UserRepository {
     pool: DbPool,
@@ -16,6 +17,9 @@ impl UserRepository {
         Self { pool }
     }
 
+    /// Loads a fully hydrated [`User`] by their SSO auth ticket.
+    ///
+    /// Returns [`DatabaseError::NotFound`] if no user has that ticket.
     pub async fn find_by_auth_ticket(
         &self,
         ticket: &str,
@@ -94,6 +98,7 @@ impl UserRepository {
         })
     }
 
+    /// Clears the auth ticket after a successful login.
     pub async fn consume_auth_ticket(
         &self,
         user_id: UserId,
@@ -109,6 +114,8 @@ impl UserRepository {
         Ok(())
     }
 
+    /// Fetches all alternative currency balances for a user. Credits are not
+    /// included.
     async fn fetch_currencies(
         &self,
         user_id: UserId,
@@ -126,6 +133,7 @@ impl UserRepository {
             .collect())
     }
 
+    /// Updates the user's figure string and gender in the database.
     pub async fn update_look(
         &self,
         user_id: UserId,
@@ -146,6 +154,7 @@ impl UserRepository {
     }
 }
 
+/// Converts a [`sqlx::Error`] into a [`SiriusError`].
 fn map_sqlx_error(err: sqlx::Error) -> SiriusError {
     let db_err = match err {
         sqlx::Error::RowNotFound => {
@@ -154,9 +163,13 @@ fn map_sqlx_error(err: sqlx::Error) -> SiriusError {
         sqlx::Error::Database(db_err) => {
             if let Some(code) = db_err.code() {
                 if code == "23505" {
+                    // unique_violation
                     return SiriusError::Database(
                         DatabaseError::UniqueViolation {
-                            field: "unknown".into(),
+                            field: db_err
+                                .constraint()
+                                .unwrap_or("unknown")
+                                .to_string(),
                         },
                     );
                 }
