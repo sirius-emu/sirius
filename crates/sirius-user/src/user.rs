@@ -1,9 +1,12 @@
 //! The user actor.
 
+use std::sync::Arc;
+
 use sirius_actor::{Actor, ActorContext};
 use sirius_codec::RawPacket;
 use sirius_error::SiriusError;
-use sirius_packets::{OutgoingPacket, outgoing::user::UserSettingsComposer};
+use sirius_packets::OutgoingPacket;
+use sirius_permissions::PermissionsManager;
 use sirius_repository::models::User;
 use sirius_types::CurrencyType;
 use tokio::sync::mpsc;
@@ -11,7 +14,10 @@ use tracing::{info, warn};
 
 use sirius_packets::outgoing::{
     handshake::UserInfoComposer,
-    user::{UserCreditsComposer, UserCurrencyComposer},
+    user::{
+        UserCreditsComposer, UserCurrencyComposer, UserPermissionsComposer,
+        UserSettingsComposer,
+    },
 };
 
 use crate::UserCommand;
@@ -19,11 +25,20 @@ use crate::UserCommand;
 pub struct UserActor {
     user: User,
     outbound_tx: mpsc::Sender<RawPacket>,
+    permissions: Arc<PermissionsManager>,
 }
 
 impl UserActor {
-    pub fn new(user: User, outbound_tx: mpsc::Sender<RawPacket>) -> Self {
-        Self { user, outbound_tx }
+    pub fn new(
+        user: User,
+        outbound_tx: mpsc::Sender<RawPacket>,
+        permissions: Arc<PermissionsManager>,
+    ) -> Self {
+        Self {
+            user,
+            outbound_tx,
+            permissions,
+        }
     }
 
     async fn send(&self, packet: RawPacket) -> Result<(), SiriusError> {
@@ -51,6 +66,17 @@ impl UserActor {
 
         self.compose(&UserSettingsComposer::new(self.user.settings.clone()))
             .await?;
+
+        let rank = self.permissions.get_rank(self.user.rank);
+        let is_ambassador =
+            rank.as_ref().map(|r| r.is_ambassador()).unwrap_or(false);
+
+        self.compose(&UserPermissionsComposer::new(
+            0,
+            self.user.rank,
+            is_ambassador,
+        ))
+        .await?;
 
         Ok(())
     }

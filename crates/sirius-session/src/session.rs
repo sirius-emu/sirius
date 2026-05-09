@@ -7,10 +7,12 @@ use sirius_error::SiriusError;
 use sirius_network::{Connection, ConnectionId};
 use sirius_packets::user::UserCurrencyPacket;
 use sirius_packets::{IncomingPacket, OutgoingPacket};
+use sirius_permissions::PermissionsManager;
 use sirius_repository::Repository;
 use sirius_repository::models::User;
 use sirius_user::{UserActor, UserCommand, UserHandle};
 use std::net::SocketAddr;
+use std::sync::Arc;
 use std::time::Instant;
 use tokio::sync::mpsc;
 use tracing::{debug, info, warn};
@@ -38,6 +40,7 @@ pub struct Session {
     manager: SessionManager,
     repo: Repository,
     user_handle: Option<UserHandle>,
+    permissions: Arc<PermissionsManager>,
 }
 
 impl Session {
@@ -50,6 +53,7 @@ impl Session {
         connection: Connection,
         manager: SessionManager,
         repo: Repository,
+        permissions: Arc<PermissionsManager>,
     ) -> (Self, mpsc::Receiver<RawPacket>) {
         let session = Self {
             id: connection.id,
@@ -60,6 +64,7 @@ impl Session {
             manager,
             repo,
             user_handle: None,
+            permissions,
         };
 
         (session, connection.inbound_rx)
@@ -218,7 +223,11 @@ impl Session {
             "session authenticated"
         );
 
-        let actor = UserActor::new(user, self.outbound_tx.clone());
+        let actor = UserActor::new(
+            user,
+            self.outbound_tx.clone(),
+            self.permissions.clone(),
+        );
         let handle = actor.spawn(64);
 
         self.user_handle = Some(handle.clone());
@@ -338,9 +347,10 @@ pub fn spawn_session(
     connection: Connection,
     manager: SessionManager,
     repo: Repository,
+    permissions: Arc<PermissionsManager>,
 ) -> crate::SessionHandle {
     let (session, mut inbound_rx) =
-        Session::from_connection(connection, manager, repo);
+        Session::from_connection(connection, manager, repo, permissions);
     let handle = session.spawn(256);
     let pump_handle = handle.clone();
 

@@ -1,0 +1,11 @@
+[package]
+name = "sirius-permissions"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+arc-swap = "1.9.1"
+sirius-database.workspace = true
+sirius-error.workspace = true
+sqlx.workspace = true
+tracing.workspace = true

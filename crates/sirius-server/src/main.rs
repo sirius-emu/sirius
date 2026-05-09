@@ -6,6 +6,7 @@ mod context;
 use sirius_config::Config;
 use sirius_database::Database;
 use sirius_network::{ConnectionManager, Listener, spawn_cleanup_task};
+use sirius_permissions::PermissionsManager;
 use sirius_repository::Repository;
 use sirius_session::{SessionManager, spawn_session};
 use std::{net::SocketAddr, sync::Arc};
@@ -43,6 +44,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     info!("Starting Sirius");
 
     let db = Database::connect(&shared_config.database).await?;
+    let pool = db.pool().clone();
 
     info!(
         size = db.stats().size,
@@ -79,12 +81,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     banner::print_sirius_banner(&shared_config.server.environment);
 
+    let permissions = Arc::new(PermissionsManager::load(pool.clone()).await?);
+
     listener
         .run(shutdown_rx, move |connection| {
             let ctx = context.clone();
+            let permissions = permissions.clone();
 
             async move {
-                spawn_session(connection, ctx.sessions, ctx.repository);
+                spawn_session(
+                    connection,
+                    ctx.sessions,
+                    ctx.repository,
+                    permissions,
+                );
             }
         })
         .await;

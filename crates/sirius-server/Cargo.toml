@@ -4,6 +4,7 @@ version.workspace = true
 edition.workspace = true
 
 [dependencies]
+sirius-permissions.workspace = true
 sirius-config.workspace = true
 sirius-tracing.workspace = true
 sirius-network.workspace = true

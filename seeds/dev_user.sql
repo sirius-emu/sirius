@@ -8,7 +8,7 @@ BEGIN
     END IF;
 
     INSERT INTO users (username, motto, look, gender, rank, credits, auth_ticket)
-    VALUES ('test', 'Hello Sirius!', 'hd-180-1.ch-215-62', 'M', 7, 1000, 'test_ticket')
+    VALUES ('test', 'Hello Sirius!', 'hd-180-1.ch-215-62', 'M', 5, 1000, 'test_ticket')
     RETURNING id INTO v_user_id;
 
     INSERT INTO users_stats (user_id, daily_respects, daily_pet_respects)

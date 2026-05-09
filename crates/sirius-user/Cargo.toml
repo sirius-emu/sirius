@@ -8,6 +8,7 @@ sirius-error.workspace = true
 sirius-packets.workspace = true
 sirius-actor.workspace = true
 sirius-types.workspace = true
+sirius-permissions.workspace = true
 sirius-repository.workspace = true
 sirius-codec.workspace = true
 tokio = { workspace = true, features = ["time"] }

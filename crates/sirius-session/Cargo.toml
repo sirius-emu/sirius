@@ -13,6 +13,7 @@ sirius-packets.workspace = true
 sirius-user.workspace = true
 sirius-handshake.workspace = true
 sirius-network.workspace = true
+sirius-permissions.workspace = true
 tokio.workspace = true
 tracing.workspace = true
 uuid = "1.23.1"

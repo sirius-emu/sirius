@@ -33,6 +33,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7f202df86484c868dbad7eaa557ef785d5c66295e41b460ef922eca0723b842c"
 
 [[package]]
+name = "arc-swap"
+version = "1.9.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6a3a1fd6f75306b68087b831f025c712524bcb19aad54e557b1129cfa0a2b207"
+dependencies = [
+ "rustversion",
+]
+
+[[package]]
 name = "atoi"
 version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1436,6 +1445,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "sirius-permissions"
+version = "0.1.0"
+dependencies = [
+ "arc-swap",
+ "sirius-database",
+ "sirius-error",
+ "sqlx",
+ "tracing",
+]
+
+[[package]]
 name = "sirius-repository"
 version = "0.1.0"
 dependencies = [
@@ -1459,6 +1479,7 @@ dependencies = [
  "sirius-config",
  "sirius-database",
  "sirius-network",
+ "sirius-permissions",
  "sirius-repository",
  "sirius-session",
  "sirius-tracing",
@@ -1477,6 +1498,7 @@ dependencies = [
  "sirius-handshake",
  "sirius-network",
  "sirius-packets",
+ "sirius-permissions",
  "sirius-repository",
  "sirius-types",
  "sirius-user",
@@ -1512,6 +1534,7 @@ dependencies = [
  "sirius-codec",
  "sirius-error",
  "sirius-packets",
+ "sirius-permissions",
  "sirius-repository",
  "sirius-types",
  "tokio",
