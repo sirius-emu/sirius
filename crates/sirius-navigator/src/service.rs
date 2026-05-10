@@ -1,5 +1,5 @@
 use sirius_repository::Repository;
-use sirius_types::RoomDisplayNode;
+use sirius_repository::models::Room;
 
 pub struct NavigatorService {
     _repo: Repository,
@@ -12,7 +12,7 @@ pub struct NavigatorBlock {
     pub action: i32,
     pub is_closed: bool,
     pub view_mode: i32,
-    pub rooms: Vec<RoomDisplayNode>,
+    pub rooms: Vec<Room>,
 }
 
 impl NavigatorService {

@@ -1414,6 +1414,7 @@ dependencies = [
  "sirius-error",
  "sirius-navigator",
  "sirius-packets",
+ "sirius-repository",
  "sirius-types",
  "sirius-user",
  "tokio",

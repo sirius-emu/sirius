@@ -1,8 +1,8 @@
 use crate::prelude::*;
-use sirius_packets::navigator::NavigatorSearchPacket;
-use sirius_packets::outgoing::navigator::{
-    NavigatorSearchResultsComposer, SearchResultBlock,
+use sirius_packets::{
+    incoming::NavigatorSearchPacket, outgoing::NavigatorSearchResultsComposer,
 };
+use sirius_repository::models::SearchResultBlock;
 
 pub struct NavigatorSearchHandler;
 

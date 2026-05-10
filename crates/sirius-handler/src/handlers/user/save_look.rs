@@ -1,5 +1,5 @@
 use crate::prelude::*;
-use sirius_packets::user::UserSaveLookPacket;
+use sirius_packets::incoming::UserSaveLookPacket;
 
 pub struct UserSaveLookHandler;
 

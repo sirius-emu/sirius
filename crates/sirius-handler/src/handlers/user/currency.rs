@@ -1,5 +1,5 @@
 use crate::prelude::*;
-use sirius_packets::user::UserCurrencyPacket;
+use sirius_packets::incoming::UserCurrencyPacket;
 
 pub struct UserCurrencyHandler;
 

@@ -1,7 +1,7 @@
 use crate::prelude::*;
 use sirius_packets::{
-    incoming::navigator::NavigatorInitPacket,
-    outgoing::navigator::{
+    incoming::NavigatorInitPacket,
+    outgoing::{
         NavigatorCollapsedCategoriesComposer, NavigatorEventCategoriesComposer,
         NavigatorLiftedRoomsComposer, NavigatorMetaDataComposer,
         NavigatorSavedSearches, NavigatorSettingsComposer,

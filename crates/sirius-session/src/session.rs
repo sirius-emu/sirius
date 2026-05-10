@@ -18,12 +18,12 @@ use std::time::Instant;
 use tokio::sync::mpsc;
 use tracing::{debug, info, warn};
 
-use sirius_packets::incoming::handshake::{
+use sirius_packets::incoming::{
     ClientHelloPacket, PingPacket, PongPacket, SsoTicketPacket,
 };
-use sirius_packets::outgoing::availability::AvailabilityStatusComposer;
-use sirius_packets::outgoing::handshake::{
-    AuthenticatedComposer, PingComposer, PongComposer,
+use sirius_packets::outgoing::{
+    AuthenticatedComposer, AvailabilityStatusComposer, PingComposer,
+    PongComposer,
 };
 
 /// The session actor state.

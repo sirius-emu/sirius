@@ -7,6 +7,7 @@ edition.workspace = true
 sirius-error.workspace = true
 sirius-types.workspace = true
 sirius-packets.workspace = true
+sirius-repository.workspace = true
 sirius-codec.workspace = true
 sirius-user.workspace = true
 sirius-navigator.workspace = true

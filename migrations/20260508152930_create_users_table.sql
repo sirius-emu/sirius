@@ -81,19 +81,21 @@ CREATE TABLE navigator_categories (
     id INT PRIMARY KEY,
     name VARCHAR(64) NOT NULL,
     min_rank INT NOT NULL DEFAULT 1,
-    public BOOLEAN NOT NULL DEFAULT TRUE,
-    sort_order INT NOT NULL DEFAULT 0
+    is_public BOOLEAN NOT NULL DEFAULT TRUE
 );
 
-INSERT INTO navigator_categories (id, name, min_rank, public, sort_order) VALUES
-    (1,  'Base Rooms',       1, TRUE,  0),
-    (2,  'Trading',          1, TRUE,  1),
-    (3,  'Games',            1, TRUE,  2),
-    (4,  'Roleplay',         1, TRUE,  3),
-    (5,  'Music',            1, TRUE,  4),
-    (6,  'Help',             1, TRUE,  5),
-    (7,  'Staff Rooms',      4, FALSE, 6);
-
+INSERT INTO navigator_categories (id, name, min_rank, is_public) VALUES
+    (1, 'Hottest Events', 1, FALSE),
+    (2, 'Parties & Music', 1, TRUE),
+    (3, 'Role Play', 1, TRUE),
+    (4, 'Help Desk', 1, TRUE),
+    (5, 'Trading', 1, TRUE),
+    (6, 'Games', 1, TRUE),
+    (7, 'Debates & Discussions', 1, TRUE),
+    (8, 'Grand Openings', 1, TRUE),
+    (9, 'Friending', 1, TRUE),
+    (10, 'Jobs', 1, TRUE),
+    (11, 'Group Events', 1, TRUE);
 
 CREATE TABLE rooms (
     id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,

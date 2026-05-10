@@ -5,7 +5,7 @@ use std::sync::Arc;
 use sirius_actor::{Actor, ActorContext};
 use sirius_codec::RawPacket;
 use sirius_error::SiriusError;
-use sirius_packets::{OutgoingPacket, outgoing::user::UpdateUserLookComposer};
+use sirius_packets::OutgoingPacket;
 use sirius_permissions::PermissionsManager;
 use sirius_repository::{Repository, models::User};
 use sirius_types::{CurrencyType, Gender};
@@ -13,11 +13,8 @@ use tokio::sync::mpsc;
 use tracing::{info, warn};
 
 use sirius_packets::outgoing::{
-    handshake::UserInfoComposer,
-    user::{
-        UserCreditsComposer, UserCurrencyComposer, UserPermissionsComposer,
-        UserSettingsComposer,
-    },
+    UpdateUserLookComposer, UserCreditsComposer, UserCurrencyComposer,
+    UserInfoComposer, UserPermissionsComposer, UserSettingsComposer,
 };
 
 use crate::UserCommand;

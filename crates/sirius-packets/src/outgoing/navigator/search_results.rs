@@ -1,15 +1,5 @@
 use crate::prelude::*;
-use sirius_types::RoomDisplayNode;
-
-#[derive(Debug, Clone)]
-pub struct SearchResultBlock {
-    pub search_code: String,
-    pub text: String,
-    pub action: i32,
-    pub is_closed: bool,
-    pub view_mode: i32,
-    pub rooms: Vec<RoomDisplayNode>,
-}
+use sirius_repository::models::SearchResultBlock;
 
 #[derive(Debug, Clone)]
 pub struct NavigatorSearchResultsComposer {
@@ -51,18 +41,18 @@ impl OutgoingPacket for NavigatorSearchResultsComposer {
                 .write_i32(block.rooms.len() as i32);
 
             for room in &block.rooms {
-                w.write_i32(room.room_id.into())
+                w.write_i32(room.id.into())
                     .write_string(&room.name)
                     .write_i32(room.owner_id.into())
                     .write_string(&room.owner_name)
                     .write_i32(room.lock_type as i32)
-                    .write_i32(room.current_users)
+                    .write_i32(0)
                     .write_i32(room.max_users)
                     .write_string(&room.description)
-                    .write_i32(0) // trade mode
-                    .write_i32(0) // score
-                    .write_i32(0) // ranking
-                    .write_i32(room.category.into()) // category ID
+                    .write_i32(0)
+                    .write_i32(0)
+                    .write_i32(0)
+                    .write_i32(room.category.into())
                     .write_i32(0)
                     .write_i32(0);
             }

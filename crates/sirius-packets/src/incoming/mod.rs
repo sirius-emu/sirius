@@ -4,6 +4,10 @@
 //! packets in the appropriate submodule, implement [`IncomingPacket`], then
 //! register it here so call sites can import from `sirius_packets::incoming`.
 
-pub mod handshake;
-pub mod navigator;
-pub mod user;
+mod handshake;
+mod navigator;
+mod user;
+
+pub use handshake::*;
+pub use navigator::*;
+pub use user::*;

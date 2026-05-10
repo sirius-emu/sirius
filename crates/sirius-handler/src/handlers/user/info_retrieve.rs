@@ -1,5 +1,5 @@
 use crate::prelude::*;
-use sirius_packets::user::UserInfoRetrievePacket;
+use sirius_packets::incoming::UserInfoRetrievePacket;
 
 pub struct UserInfoRetrieveHandler;
 

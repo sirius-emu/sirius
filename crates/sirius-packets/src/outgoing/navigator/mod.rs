@@ -11,5 +11,5 @@ pub use event_categories::NavigatorEventCategoriesComposer;
 pub use lifted_rooms::NavigatorLiftedRoomsComposer;
 pub use meta_data::NavigatorMetaDataComposer;
 pub use saved_searches::NavigatorSavedSearches;
-pub use search_results::{NavigatorSearchResultsComposer, SearchResultBlock};
+pub use search_results::NavigatorSearchResultsComposer;
 pub use settings::NavigatorSettingsComposer;
